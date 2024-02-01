@@ -41,6 +41,12 @@ class Activity
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $stand_time = null;
 
+    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
+    private ?TeamParticipation $teamParticipation = null;
+
+    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
+    private ?StandParticipation $standParticipation = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -157,6 +163,50 @@ class Activity
     public function setStandTime(?\DateTimeInterface $stand_time): static
     {
         $this->stand_time = $stand_time;
+
+        return $this;
+    }
+
+    public function getTeamParticipation(): ?TeamParticipation
+    {
+        return $this->teamParticipation;
+    }
+
+    public function setTeamParticipation(?TeamParticipation $teamParticipation): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($teamParticipation === null && $this->teamParticipation !== null) {
+            $this->teamParticipation->setActivity(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($teamParticipation !== null && $teamParticipation->getActivity() !== $this) {
+            $teamParticipation->setActivity($this);
+        }
+
+        $this->teamParticipation = $teamParticipation;
+
+        return $this;
+    }
+
+    public function getStandParticipation(): ?StandParticipation
+    {
+        return $this->standParticipation;
+    }
+
+    public function setStandParticipation(?StandParticipation $standParticipation): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($standParticipation === null && $this->standParticipation !== null) {
+            $this->standParticipation->setActivity(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($standParticipation !== null && $standParticipation->getActivity() !== $this) {
+            $standParticipation->setActivity($this);
+        }
+
+        $this->standParticipation = $standParticipation;
 
         return $this;
     }

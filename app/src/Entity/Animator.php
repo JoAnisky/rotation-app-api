@@ -16,6 +16,9 @@ class Animator
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\OneToOne(mappedBy: 'animator_id', cascade: ['persist', 'remove'])]
+    private ?Stand $stand = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -36,6 +39,28 @@ class Animator
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getStand(): ?Stand
+    {
+        return $this->stand;
+    }
+
+    public function setStand(?Stand $stand): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($stand === null && $this->stand !== null) {
+            $this->stand->setAnimatorId(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($stand !== null && $stand->getAnimatorId() !== $this) {
+            $stand->setAnimatorId($this);
+        }
+
+        $this->stand = $stand;
 
         return $this;
     }

@@ -19,6 +19,12 @@ class Stand
     #[ORM\Column]
     private ?bool $is_competitive = null;
 
+    #[ORM\OneToOne(mappedBy: 'stand', cascade: ['persist', 'remove'])]
+    private ?StandParticipation $standParticipation = null;
+
+    #[ORM\OneToOne(inversedBy: 'stand', cascade: ['persist', 'remove'])]
+    private ?Animator $animator_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +57,40 @@ class Stand
     public function setIsCompetitive(bool $is_competitive): static
     {
         $this->is_competitive = $is_competitive;
+
+        return $this;
+    }
+
+    public function getStandParticipation(): ?StandParticipation
+    {
+        return $this->standParticipation;
+    }
+
+    public function setStandParticipation(?StandParticipation $standParticipation): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($standParticipation === null && $this->standParticipation !== null) {
+            $this->standParticipation->setStand(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($standParticipation !== null && $standParticipation->getStand() !== $this) {
+            $standParticipation->setStand($this);
+        }
+
+        $this->standParticipation = $standParticipation;
+
+        return $this;
+    }
+
+    public function getAnimatorId(): ?Animator
+    {
+        return $this->animator_id;
+    }
+
+    public function setAnimatorId(?Animator $animator_id): static
+    {
+        $this->animator_id = $animator_id;
 
         return $this;
     }
