@@ -8,7 +8,7 @@ Enables the management of group rotations during multi-stand activities.
 
 __1__ : The MySQL data will be stored in the `mysql` folder so you need to rename the `mysql-sample` folder to `mysql`.
   
-__2__ : Configure the database access path and user in the  `.env` file located in the `app/` directory.
+__2__ : Configure your database access path and user in the  `.env` file located in the `app/` directory. For good practice, save this file as  `.env.local`
 
 Example:
 DATABASE_URL="username:password@127.0.0.1:port/database_name"
@@ -17,7 +17,7 @@ DATABASE_URL="username:password@127.0.0.1:port/database_name"
 DATABASE_URL="mysql://symfony:symfony@127.0.0.1:3306/rotation_app?serverVersion=8.0.32&charset=utf8mb4"
 ```
 
-_IMPORTANT: `127.0.0.1` does not function within containers if your frontend is also containerized. Instead, you need to use the database container name from the `docker-compose.yaml` file:_ :
+_IMPORTANT: `127.0.0.1` does not function within containers if your Symfony app is also containerized. Instead, you need to use the database container name from the `docker-compose.yaml` file:_ :
 
 e.g : (database // replace 127.0.0.1)
 
