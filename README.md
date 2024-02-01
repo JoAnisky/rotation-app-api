@@ -6,9 +6,9 @@ Enables the management of group rotations during multi-stand activities.
 
 ## Setting up the application locally
 
-__1__ : The MySQL data will be stored in the `mysql` folder so you need to rename the `mysql-sample` folder to `mysql`.
+__1__ - Rename the `mysql-sample` folder to `mysql`. Database is stored in this folder.
   
-__2__ : Configure your database access path and user in the  `.env` file located in the `app/` directory. For good practice, save this file as  `.env.local`
+__2__ - Configure your database access path and user in the  `.env` file located in the `app/` directory. For good practice, save this file as  `.env.local`
 
 Example:
 DATABASE_URL="username:password@127.0.0.1:port/database_name"
@@ -26,13 +26,19 @@ e.g : (database // replace 127.0.0.1)
     container_name: database
 ```
 
-__3__ : At the project root, build and launch PHP and PHPMyAdmin containers using the following command with Docker :
+__3__ - At the project root, build and launch PHP and PHPMyAdmin containers using the following command with Docker :
 
 ```shell
 docker-compose up --build
 ```
 
-__4__ : Navigate to the directory (cd app/) and start the Symfony server (add the -d flag to run in the background):
+__4__ - Install the dependencies in the app/ directory
+
+```shell
+composer install
+```
+
+__5__ - Start the Symfony server (add the -d flag to run in the background):
 
 ```shell
 symfony serve
