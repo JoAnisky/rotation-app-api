@@ -23,7 +23,7 @@ e.g : (database // replace 127.0.0.1)
 
 ```yaml
   database:
-    container_name: database // replace 127.0.0.1
+    container_name: database
 ```
 
 __3__ : At the project root, build and launch PHP and PHPMyAdmin containers using the following command with Docker :
