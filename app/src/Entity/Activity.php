@@ -23,7 +23,7 @@ class Activity
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column]
     private array $statut = [];
 
     #[ORM\Column(nullable: true)]
@@ -33,13 +33,13 @@ class Activity
     private ?int $nb_teams = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $global_time = null;
+    private ?\DateTimeInterface $global_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $rotation_time = null;
+    private ?\DateTimeInterface $rotation_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $stand_time = null;
+    private ?\DateTimeInterface $stand_duration = null;
 
     #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
     private ?TeamParticipation $teamParticipation = null;
@@ -131,38 +131,38 @@ class Activity
         return $this;
     }
 
-    public function getGlobalTime(): ?\DateTimeInterface
+    public function getGlobalDuration(): ?\DateTimeInterface
     {
-        return $this->global_time;
+        return $this->global_duration;
     }
 
-    public function setGlobalTime(?\DateTimeInterface $global_time): static
+    public function setGlobalDuration(?\DateTimeInterface $global_duration): static
     {
-        $this->global_time = $global_time;
+        $this->global_duration = $global_duration;
 
         return $this;
     }
 
-    public function getRotationTime(): ?\DateTimeInterface
+    public function getRotationDuration(): ?\DateTimeInterface
     {
-        return $this->rotation_time;
+        return $this->rotation_duration;
     }
 
-    public function setRotationTime(?\DateTimeInterface $rotation_time): static
+    public function setRotationDuration(?\DateTimeInterface $rotation_duration): static
     {
-        $this->rotation_time = $rotation_time;
+        $this->rotation_duration = $rotation_duration;
 
         return $this;
     }
 
-    public function getStandTime(): ?\DateTimeInterface
+    public function getStandDuration(): ?\DateTimeInterface
     {
-        return $this->stand_time;
+        return $this->stand_duration;
     }
 
-    public function setStandTime(?\DateTimeInterface $stand_time): static
+    public function setStandDuration(?\DateTimeInterface $stand_duration): static
     {
-        $this->stand_time = $stand_time;
+        $this->stand_duration = $stand_duration;
 
         return $this;
     }
