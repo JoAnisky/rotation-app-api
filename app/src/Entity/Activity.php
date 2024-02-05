@@ -25,7 +25,7 @@ class Activity
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column]
     private array $statut = [];
 
     #[ORM\Column(nullable: true)]
