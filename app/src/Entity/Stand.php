@@ -19,11 +19,16 @@ class Stand
     #[ORM\Column]
     private ?bool $is_competitive = null;
 
-    #[ORM\OneToOne(mappedBy: 'stand', cascade: ['persist', 'remove'])]
-    private ?StandParticipation $standParticipation = null;
+    #[ORM\OneToOne(inversedBy: 'stand_id', cascade: ['persist', 'remove'])]
+    private ?Animator $animator = null;
 
-    #[ORM\OneToOne(inversedBy: 'stand', cascade: ['persist', 'remove'])]
-    private ?Animator $animator_id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'stand_id')]
+    private ?Activity $activity = null;
+
+    #[ORM\ManyToOne(inversedBy: 'stands')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $User = null;
 
     public function getId(): ?int
     {
@@ -61,36 +66,38 @@ class Stand
         return $this;
     }
 
-    public function getStandParticipation(): ?StandParticipation
+    public function getAnimator(): ?Animator
     {
-        return $this->standParticipation;
+        return $this->animator;
     }
 
-    public function setStandParticipation(?StandParticipation $standParticipation): static
+    public function setAnimator(?Animator $animator): static
     {
-        // unset the owning side of the relation if necessary
-        if ($standParticipation === null && $this->standParticipation !== null) {
-            $this->standParticipation->setStand(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($standParticipation !== null && $standParticipation->getStand() !== $this) {
-            $standParticipation->setStand($this);
-        }
-
-        $this->standParticipation = $standParticipation;
+        $this->animator = $animator;
 
         return $this;
     }
 
-    public function getAnimatorId(): ?Animator
+    public function getActivity(): ?Activity
     {
-        return $this->animator_id;
+        return $this->activity;
     }
 
-    public function setAnimatorId(?Animator $animator_id): static
+    public function setActivity(?Activity $activity): static
     {
-        $this->animator_id = $animator_id;
+        $this->activity = $activity;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->User;
+    }
+
+    public function setUser(?User $User): static
+    {
+        $this->User = $User;
 
         return $this;
     }

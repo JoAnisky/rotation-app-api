@@ -16,8 +16,13 @@ class Team
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\OneToOne(mappedBy: 'team', cascade: ['persist', 'remove'])]
-    private ?TeamParticipation $teamParticipation = null;
+
+    #[ORM\ManyToOne(inversedBy: 'team_id')]
+    private ?Activity $activity = null;
+
+    #[ORM\ManyToOne(inversedBy: 'teams')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -43,24 +48,26 @@ class Team
         return $this;
     }
 
-    public function getTeamParticipation(): ?TeamParticipation
+    public function getActivity(): ?Activity
     {
-        return $this->teamParticipation;
+        return $this->activity;
     }
 
-    public function setTeamParticipation(?TeamParticipation $teamParticipation): static
+    public function setActivity(?Activity $activity): static
     {
-        // unset the owning side of the relation if necessary
-        if ($teamParticipation === null && $this->teamParticipation !== null) {
-            $this->teamParticipation->setTeam(null);
-        }
+        $this->activity = $activity;
 
-        // set the owning side of the relation if necessary
-        if ($teamParticipation !== null && $teamParticipation->getTeam() !== $this) {
-            $teamParticipation->setTeam($this);
-        }
+        return $this;
+    }
 
-        $this->teamParticipation = $teamParticipation;
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
