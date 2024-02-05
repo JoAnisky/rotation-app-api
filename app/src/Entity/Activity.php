@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ActivityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -33,19 +35,30 @@ class Activity
     private ?int $nb_teams = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $global_time = null;
+    private ?\DateTimeInterface $global_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $rotation_time = null;
+    private ?\DateTimeInterface $rotation_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $stand_time = null;
+    private ?\DateTimeInterface $stand_duration = null;
 
-    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
-    private ?TeamParticipation $teamParticipation = null;
 
-    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
-    private ?StandParticipation $standParticipation = null;
+    #[ORM\OneToMany(mappedBy: 'activity_id', targetEntity: Team::class)]
+    private Collection $team;
+
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]
+    private Collection $stand;
+
+    #[ORM\ManyToOne(inversedBy: 'activities')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    public function __construct()
+    {
+        $this->team = new ArrayCollection();
+        $this->stand = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -131,82 +144,110 @@ class Activity
         return $this;
     }
 
-    public function getGlobalTime(): ?\DateTimeInterface
+    public function getGlobalDuration(): ?\DateTimeInterface
     {
-        return $this->global_time;
+        return $this->global_duration;
     }
 
-    public function setGlobalTime(?\DateTimeInterface $global_time): static
+    public function setGlobalDuration(?\DateTimeInterface $global_duration): static
     {
-        $this->global_time = $global_time;
+        $this->global_duration = $global_duration;
 
         return $this;
     }
 
-    public function getRotationTime(): ?\DateTimeInterface
+    public function getRotationDuration(): ?\DateTimeInterface
     {
-        return $this->rotation_time;
+        return $this->rotation_duration;
     }
 
-    public function setRotationTime(?\DateTimeInterface $rotation_time): static
+    public function setRotationDuration(?\DateTimeInterface $rotation_duration): static
     {
-        $this->rotation_time = $rotation_time;
+        $this->rotation_duration = $rotation_duration;
 
         return $this;
     }
 
-    public function getStandTime(): ?\DateTimeInterface
+    public function getStandDuration(): ?\DateTimeInterface
     {
-        return $this->stand_time;
+        return $this->stand_duration;
     }
 
-    public function setStandTime(?\DateTimeInterface $stand_time): static
+    public function setStandDuration(?\DateTimeInterface $stand_duration): static
     {
-        $this->stand_time = $stand_time;
+        $this->stand_duration = $stand_duration;
 
         return $this;
     }
 
-    public function getTeamParticipation(): ?TeamParticipation
+    /**
+     * @return Collection<int, Team>
+     */
+    public function getTeam(): Collection
     {
-        return $this->teamParticipation;
+        return $this->team;
     }
 
-    public function setTeamParticipation(?TeamParticipation $teamParticipation): static
+    public function addTeam(Team $team): static
     {
-        // unset the owning side of the relation if necessary
-        if ($teamParticipation === null && $this->teamParticipation !== null) {
-            $this->teamParticipation->setActivity(null);
+        if (!$this->team->contains($team)) {
+            $this->team->add($team);
+            $team->setActivity($this);
         }
-
-        // set the owning side of the relation if necessary
-        if ($teamParticipation !== null && $teamParticipation->getActivity() !== $this) {
-            $teamParticipation->setActivity($this);
-        }
-
-        $this->teamParticipation = $teamParticipation;
 
         return $this;
     }
 
-    public function getStandParticipation(): ?StandParticipation
+    public function removeTeam(Team $team): static
     {
-        return $this->standParticipation;
+        if ($this->team->removeElement($team)) {
+            // set the owning side to null (unless already changed)
+            if ($team->getActivity() === $this) {
+                $team->setActivity(null);
+            }
+        }
+
+        return $this;
     }
 
-    public function setStandParticipation(?StandParticipation $standParticipation): static
+    /**
+     * @return Collection<int, Stand>
+     */
+    public function getStand(): Collection
     {
-        // unset the owning side of the relation if necessary
-        if ($standParticipation === null && $this->standParticipation !== null) {
-            $this->standParticipation->setActivity(null);
+        return $this->stand;
+    }
+
+    public function addStand(Stand $stand): static
+    {
+        if (!$this->stand->contains($stand)) {
+            $this->stand->add($stand);
+            $stand->setActivity($this);
         }
 
-        // set the owning side of the relation if necessary
-        if ($standParticipation !== null && $standParticipation->getActivity() !== $this) {
-            $standParticipation->setActivity($this);
+        return $this;
+    }
+
+    public function removeStand(Stand $stand): static
+    {
+        if ($this->stand->removeElement($stand)) {
+            // set the owning side to null (unless already changed)
+            if ($stand->getActivity() === $this) {
+                $stand->setActivity(null);
+            }
         }
 
-        $this->standParticipation = $standParticipation;
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

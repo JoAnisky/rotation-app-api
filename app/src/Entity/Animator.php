@@ -19,6 +19,10 @@ class Animator
     #[ORM\OneToOne(mappedBy: 'animator_id', cascade: ['persist', 'remove'])]
     private ?Stand $stand = null;
 
+    #[ORM\ManyToOne(inversedBy: 'animators')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,16 +56,29 @@ class Animator
     {
         // unset the owning side of the relation if necessary
         if ($stand === null && $this->stand !== null) {
-            $this->stand->setAnimatorId(null);
+            $this->stand->setAnimator(null);
         }
 
         // set the owning side of the relation if necessary
-        if ($stand !== null && $stand->getAnimatorId() !== $this) {
-            $stand->setAnimatorId($this);
+        if ($stand !== null && $stand->getAnimator() !== $this) {
+            $stand->setAnimator($this);
         }
 
         $this->stand = $stand;
 
         return $this;
     }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
 }
