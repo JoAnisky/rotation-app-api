@@ -3,12 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -20,7 +22,7 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
-    
+
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
@@ -61,7 +63,17 @@ class User
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->login;
+    }
+
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -207,5 +219,24 @@ class User
         }
 
         return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    /**
+     * Méthode getUsername qui permet de retourner le champ qui est utilisé pour l'authentification.
+     *
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
     }
 }
