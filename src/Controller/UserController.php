@@ -30,33 +30,42 @@ class UserController extends AbstractController
     }
 
     /**
-     * Retrieves all users regardless of their role.
+     * Retrieves all users based on their role
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
     #[Route('/', name: 'user', methods: ['GET'])]
-    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getAllUsersByRole(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $usersList = $userRepository->findAll();
-        $jsonUsersList = $serializer->serialize($usersList, 'json');
+        $gamemasterList = $userRepository->getUserByRole("ROLE_GAMEMASTER");
+        if (empty($gamemasterList)) {
+            // If no data found, return 404
+            return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+        $jsonUsersList = $serializer->serialize($gamemasterList, 'json');
         return new JsonResponse($jsonUsersList, Response::HTTP_OK, [], true);
     }
 
     /**
-     * Retrieves one user by ID.
+     * Retrieves one user based on his role and ID.
      * @param User $user
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
-    public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
+    public function getOneUserByRole(int $id, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        // If user doesn't ParamConverter will throw an Exception
+        $gamemaster = $userRepository->getUserByRoleAndId("ROLE_GAMEMASTER", $id);
+
+        if (empty($gamemaster)) {
+            // If no data found, return 404
+            return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
 
         // Turn $user object into JSON format
-        $jsonUser = $serializer->serialize($user, 'json');
-        return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+        $jsonGamemaster = $serializer->serialize($gamemaster, 'json');
+        return new JsonResponse($jsonGamemaster, Response::HTTP_OK, [], true);
     }
 
     /**
@@ -68,7 +77,6 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
     public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
-        // Explore incorporating error handling for cases where a user with the specified ID is not found.
 
         $em->remove($user);
         $em->flush();
@@ -93,7 +101,8 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_user', methods: ['POST'])]
-    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse {
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse 
+    {
         // Deserialize $request->getcontent
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
 
@@ -107,7 +116,6 @@ class UserController extends AbstractController
 
             // Data is ok
             // Hash the password before persisting
-
             $user->setPassword($this->userPasswordHasher->hashPassword($user, $user->getPassword()));
 
             // Persist and upgrade user
