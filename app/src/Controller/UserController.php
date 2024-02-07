@@ -22,7 +22,7 @@ class UserController extends AbstractController
     private $userPasswordHasher;
 
     /**
-     * UserPasswordHasherInterface $userPasswordHasher used for User password encryption
+     * @param UserPasswordHasherInterface $userPasswordHasher - used for User password encryption
      */
     public function __construct(UserPasswordHasherInterface $userPasswordHasher)
     {
@@ -52,8 +52,7 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
     public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
     {
-        // If user ID doesn't exists ? / Explore incorporating error handling for cases where a user with the specified ID is not found.
-
+        // If user doesn't ParamConverter will throw an Exception
 
         // Turn $user object into JSON format
         $jsonUser = $serializer->serialize($user, 'json');
@@ -81,8 +80,9 @@ class UserController extends AbstractController
      * Create an User using the following structure 
      * 
      * {
-     *  "login" : "login"
-     *  "password" : "password"
+     *  "login" : "login",
+     *  "password" : "password",
+     *  "roles": ["ROLE_TEST"]
      * }
      * Use the UserPasswordHasherInterface to hash the password
      * @param Request $request
@@ -93,13 +93,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_user', methods: ['POST'])]
-    public function createUser(
-        Request $request,
-        SerializerInterface $serializer,
-        EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator,
-    ): JsonResponse {
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse {
         // Deserialize $request->getcontent
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
 
@@ -129,6 +123,21 @@ class UserController extends AbstractController
         }
     }
 
+    /**
+     * PUT an existing user
+     * {
+     *  "login" : "newLogin",
+     *  "password" : "newPassword",
+     *  "roles": ["ROLE_NEW"]
+     * }
+     * 
+     * @param Request $request
+     * @param User $currentUser
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/{id}', name: 'update_user', methods: ['PUT'])]
     public function updateUser(Request $request, User $currentUser, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
@@ -149,9 +158,6 @@ class UserController extends AbstractController
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
-
-        // The request content is converted into an associative array for easier access to data
-        $content = $request->toArray();
 
         // The updated user object is persisted to the database using EntityManagerInterface
         $em->persist($updatedUser);
