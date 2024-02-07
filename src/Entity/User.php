@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Animator;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -16,12 +20,16 @@ class User
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le champ login est obligatoire")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le login doit faire au moins {{ limit }} caractères", maxMessage: "Le login ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $login = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le champ password est obligatoire")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le password doit faire au moins {{ limit }} caractères", maxMessage: "Le password ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $password = null;
-    
-    #[ORM\Column(type: 'json')]
+
+    #[ORM\Column]
     private array $roles = [];
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Animator::class)]
@@ -30,7 +38,7 @@ class User
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Team::class)]
     private Collection $teams;
 
-    #[ORM\OneToMany(mappedBy: 'User', targetEntity: Stand::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Stand::class)]
     private Collection $stands;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Activity::class)]
@@ -61,7 +69,17 @@ class User
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->login;
+    }
+
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -73,16 +91,17 @@ class User
         return $this;
     }
 
+    /**
+     * @see UserInterface
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -207,5 +226,24 @@ class User
         }
 
         return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    /**
+     * Méthode getUsername qui permet de retourner le champ qui est utilisé pour l'authentification.
+     *
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
     }
 }

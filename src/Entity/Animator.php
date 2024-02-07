@@ -16,7 +16,7 @@ class Animator
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\OneToOne(mappedBy: 'animator_id', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'animator', cascade: ['persist', 'remove'])]
     private ?Stand $stand = null;
 
     #[ORM\ManyToOne(inversedBy: 'animators')]
