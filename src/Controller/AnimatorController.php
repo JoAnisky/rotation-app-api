@@ -96,6 +96,7 @@ class AnimatorController extends AbstractController
      * }
      * 
      * @param Request $request
+     * @param UserRepository $userRepository
      * @param Animator $currentAnimator
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
@@ -113,7 +114,7 @@ class AnimatorController extends AbstractController
 
         // Check if the user was found
         if (!$user) {
-            return new JsonResponse(['error' => 'Animator not found'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
         }
 
         /* The request body is deserialized into an existing Animator object ($currentAnimator) using the OBJECT_TO_POPULATE option.

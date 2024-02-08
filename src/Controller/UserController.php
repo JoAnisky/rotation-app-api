@@ -49,14 +49,14 @@ class UserController extends AbstractController
 
     /**
      * Retrieves one user based on his role and ID.
-     * @param User $user
+     * @param int $id - User id
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
-    public function getOneUserByRole(int $id, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    #[Route('/{userId}', name: 'detail_user', methods: ['GET'])]
+    public function getOneUserByRole(int $userId, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $gamemaster = $userRepository->getUserByRoleAndId("ROLE_GAMEMASTER", $id);
+        $gamemaster = $userRepository->getUserByRoleAndId("ROLE_GAMEMASTER", $userId);
 
         if (empty($gamemaster)) {
             // If no data found, return 404
