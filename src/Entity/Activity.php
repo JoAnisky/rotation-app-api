@@ -45,7 +45,6 @@ class Activity
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $stand_duration = null;
 
-
     #[ORM\OneToMany(mappedBy: 'activity_id', targetEntity: Team::class)]
     private Collection $team;
 
@@ -60,7 +59,7 @@ class Activity
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
-        $this->statut = ['Non démarrée', 'En cours', 'En cours de rotation', 'Pause', 'Terminé'];
+        $this->statut = ['Non démarrée', 'En cours', 'Rotation', 'Pause', 'Terminée'];
     }
 
     public function getId(): ?int
