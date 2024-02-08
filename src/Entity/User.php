@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -17,11 +18,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getUsers"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le champ login est obligatoire")]
     #[Assert\Length(min: 2, max: 255, minMessage: "Le login doit faire au moins {{ limit }} caractères", maxMessage: "Le login ne doit pas faire plus de {{ limit }} caractères ")]
+    #[Groups(["getUsers"])]
     private ?string $login = null;
 
     #[ORM\Column(length: 255)]
@@ -30,6 +33,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column]
+    #[Groups(["getUsers"])]
     private array $roles = [];
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Animator::class)]
@@ -97,7 +101,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
 
@@ -111,7 +116,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Animator>
      */
-    public function getAnimators(): Collection
+    public function getUsers(): Collection
     {
         return $this->animators;
     }

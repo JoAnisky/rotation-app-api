@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\AnimatorRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnimatorRepository::class)]
 class Animator
@@ -11,12 +13,17 @@ class Animator
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getAnimators"])]
     private ?int $id = null;
 
+    #[Assert\NotBlank(message: "Ce champ ne peut pas être vide")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
     #[ORM\Column(length: 255)]
+    #[Groups(["getAnimators"])]
     private ?string $name = null;
 
     #[ORM\OneToOne(mappedBy: 'animator', cascade: ['persist', 'remove'])]
+    #[Groups(["getAnimators"])]
     private ?Stand $stand = null;
 
     #[ORM\ManyToOne(inversedBy: 'animators')]

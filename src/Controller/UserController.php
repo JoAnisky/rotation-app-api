@@ -22,7 +22,7 @@ class UserController extends AbstractController
     private $userPasswordHasher;
 
     /**
-     * @param UserPasswordHasherInterface $userPasswordHasher - used for User password encryption
+     * @param UserPasswordHasherInterface $userPasswordHasher - User password encryption
      */
     public function __construct(UserPasswordHasherInterface $userPasswordHasher)
     {
@@ -30,32 +30,43 @@ class UserController extends AbstractController
     }
 
     /**
-     * Retrieves all users regardless of their role.
+     * Retrieves all users based on their role
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
     #[Route('/', name: 'user', methods: ['GET'])]
-    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $usersList = $userRepository->findAll();
-        $jsonUsersList = $serializer->serialize($usersList, 'json');
+
+        if (empty($usersList)) {
+            // If no data found, return 404
+            return new JsonResponse(['message' => 'No users found'], Response::HTTP_NOT_FOUND);
+        }
+        $jsonUsersList = $serializer->serialize($usersList, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUsersList, Response::HTTP_OK, [], true);
     }
 
     /**
-     * Retrieves one user by ID.
+     * Retrieves one user based on his role and ID.
      * @param User $user
+     * @param UserRepository $userRepository,
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
-    public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
+    public function getOneUser(User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        // If user doesn't ParamConverter will throw an Exception
+        $currentUser = $userRepository->find($user);
+
+        if (empty($currentUser)) {
+            // If no data found, return 404
+            return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
 
         // Turn $user object into JSON format
-        $jsonUser = $serializer->serialize($user, 'json');
+        $jsonUser = $serializer->serialize($currentUser, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
@@ -68,7 +79,6 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
     public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
-        // Explore incorporating error handling for cases where a user with the specified ID is not found.
 
         $em->remove($user);
         $em->flush();
@@ -93,7 +103,8 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_user', methods: ['POST'])]
-    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse {
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse 
+    {
         // Deserialize $request->getcontent
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
 
@@ -107,7 +118,6 @@ class UserController extends AbstractController
 
             // Data is ok
             // Hash the password before persisting
-
             $user->setPassword($this->userPasswordHasher->hashPassword($user, $user->getPassword()));
 
             // Persist and upgrade user
@@ -115,7 +125,7 @@ class UserController extends AbstractController
             $em->flush();
 
             // Serialize new User Object for response
-            $jsonUser = $serializer->serialize($user, 'json');
+            $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
 
             $location = $urlGenerator->generate('detail_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 

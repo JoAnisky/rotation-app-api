@@ -21,28 +21,45 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-//    /**
-//     * @return User[] Returns an array of User objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Creates the base query builder for retrieving users by role.
+     * This method constructs the basic query builder with the WHERE clause to filter users by their roles.
+     *
+     * @param string $roles - The role to search for
+     * @return \Doctrine\ORM\QueryBuilder The query builder object
+     */
+    private function createBaseQuery(string $roles)
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :roles')
+            ->setParameter('roles', '%' . $roles . '%');
+    }
 
-//    public function findOneBySomeField($value): ?User
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Retrieves all Users based on their role
+     * @param string $roles - The role to search for
+     * @return array
+     */
+    public function getUsersByRole(string $roles): array
+    {
+        return $this->createBaseQuery($roles)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retrieves a User based on his role and id
+     * @param string $roles - The role to search for
+     * @param int $id - Id of the person to search for
+     * @return array
+     */
+    public function getUserByRoleAndId(string $roles, int $id): array
+    {
+        return $this->createBaseQuery($roles)
+            ->andWhere('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getResult();
+    }
+
 }
