@@ -8,6 +8,7 @@ use App\Repository\ActivityRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[HasLifecycleCallbacks]
@@ -16,6 +17,7 @@ class Activity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getStands"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
