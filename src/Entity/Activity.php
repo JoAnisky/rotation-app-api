@@ -2,13 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\ActivityRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ActivityRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
+#[HasLifecycleCallbacks]
 class Activity
 {
     #[ORM\Id]
@@ -58,6 +60,7 @@ class Activity
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
+        $this->statut = ['Non démarrée', 'En cours', 'En cours de rotation', 'Pause', 'Terminé'];
     }
 
     public function getId(): ?int
@@ -101,11 +104,12 @@ class Activity
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): void
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     public function getStatut(): array
@@ -251,4 +255,5 @@ class Activity
 
         return $this;
     }
+
 }
