@@ -28,7 +28,6 @@ class Animator
 
     #[ORM\ManyToOne(inversedBy: 'animators')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["getAnimators"])]
     private ?User $user = null;
 
     public function getId(): ?int
