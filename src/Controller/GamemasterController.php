@@ -134,7 +134,7 @@ class GamemasterController extends AbstractController
         // Decode the JSON to pass an array to JsonResponse
         $jsonUserData = json_decode($jsonUser, true);
 
-        $location = $urlGenerator->generate('detail_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate('detail_gamemaster', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonUserData, Response::HTTP_CREATED, ["Location" => $location]);
     }
