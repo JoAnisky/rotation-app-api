@@ -22,7 +22,7 @@ class UserController extends AbstractController
     private $userPasswordHasher;
 
     /**
-     * @param UserPasswordHasherInterface $userPasswordHasher - used for User password encryption
+     * @param UserPasswordHasherInterface $userPasswordHasher - User password encryption
      */
     public function __construct(UserPasswordHasherInterface $userPasswordHasher)
     {
@@ -36,36 +36,38 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'user', methods: ['GET'])]
-    public function getAllUsersByRole(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $gamemasterList = $userRepository->getUserByRole("ROLE_GAMEMASTER");
-        if (empty($gamemasterList)) {
+        $usersList = $userRepository->findAll();
+
+        if (empty($usersList)) {
             // If no data found, return 404
-            return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'No users found'], Response::HTTP_NOT_FOUND);
         }
-        $jsonUsersList = $serializer->serialize($gamemasterList, 'json');
+        $jsonUsersList = $serializer->serialize($usersList, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUsersList, Response::HTTP_OK, [], true);
     }
 
     /**
      * Retrieves one user based on his role and ID.
-     * @param int $id - User id
+     * @param User $user
+     * @param UserRepository $userRepository,
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/{userId}', name: 'detail_user', methods: ['GET'])]
-    public function getOneUserByRole(int $userId, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
+    public function getOneUser(User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $gamemaster = $userRepository->getUserByRoleAndId("ROLE_GAMEMASTER", $userId);
+        $currentUser = $userRepository->find($user);
 
-        if (empty($gamemaster)) {
+        if (empty($currentUser)) {
             // If no data found, return 404
             return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
         }
 
         // Turn $user object into JSON format
-        $jsonGamemaster = $serializer->serialize($gamemaster, 'json');
-        return new JsonResponse($jsonGamemaster, Response::HTTP_OK, [], true);
+        $jsonUser = $serializer->serialize($currentUser, 'json', ['groups' => 'getUsers']);
+        return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
     /**
@@ -123,7 +125,7 @@ class UserController extends AbstractController
             $em->flush();
 
             // Serialize new User Object for response
-            $jsonUser = $serializer->serialize($user, 'json');
+            $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
 
             $location = $urlGenerator->generate('detail_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
