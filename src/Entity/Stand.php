@@ -4,26 +4,31 @@ namespace App\Entity;
 
 use App\Repository\StandRepository;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: StandRepository::class)]
 class Stand
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getStands"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getStands"])]
     private ?string $name = null;
 
     #[ORM\Column]
-    private ?bool $is_competitive = null;
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["getStands"])]
+    private bool $is_competitive = false;
 
     #[ORM\OneToOne(inversedBy: 'stand', cascade: ['persist', 'remove'])]
+    #[Groups(["getStands"])]
     private ?Animator $animator = null;
 
-
-    #[ORM\ManyToOne(inversedBy: 'stand')]
+    #[ORM\ManyToOne(inversedBy: 'stand', cascade: ['persist'])]
+    #[Groups(["getStands"])]
     private ?Activity $activity = null;
 
     #[ORM\ManyToOne(inversedBy: 'stands')]
@@ -54,7 +59,7 @@ class Stand
         return $this;
     }
 
-    public function isIsCompetitive(): ?bool
+    public function getIsCompetitive(): ?bool
     {
         return $this->is_competitive;
     }

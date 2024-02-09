@@ -2,18 +2,22 @@
 
 namespace App\Entity;
 
-use App\Repository\ActivityRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ActivityRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
+#[HasLifecycleCallbacks]
 class Activity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getStands"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -43,7 +47,6 @@ class Activity
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $stand_duration = null;
 
-
     #[ORM\OneToMany(mappedBy: 'activity_id', targetEntity: Team::class)]
     private Collection $team;
 
@@ -58,6 +61,7 @@ class Activity
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
+        $this->statut = ['Non démarrée', 'En cours', 'Rotation', 'Pause', 'Terminée'];
     }
 
     public function getId(): ?int
@@ -101,11 +105,12 @@ class Activity
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): void
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     public function getStatut(): array
@@ -251,4 +256,5 @@ class Activity
 
         return $this;
     }
+
 }
