@@ -1,20 +1,78 @@
 # Activity Management Application API
 
-Enables the management of group rotations during multi-stand activities.
+- A Symfony 6.4 REST API that enables the management of group rotations during multi-stand activities.
 
-- The application utilizes Docker to containerize PHP and PHPMyAdmin, thus necessitating Docker Desktop or Docker Engine (CLI).
+Clone this project using
 
-## Setting up the application locally
-
-__1__ - Rename the `mysql-sample` folder to `mysql`. Database is stored in this folder for data persistence.
-  
-__2__ - Configure your database access path and user in the  `.env` file located in the `app/` directory. For good practice, save this file as  `.env.local` (it will be ignored).
-
-```php
-DATABASE_URL="mysql://symfony:symfony@127.0.0.1:3306/rotation_app?serverVersion=8.0.32&charset=utf8mb4"
+```shell
+git clone git@github.com:JoAnisky/rotation-app-api.git
 ```
 
-_IMPORTANT: `127.0.0.1` does not function within containers if your Symfony app is also containerized. Instead, you need to use the database container name from the `docker-compose.yaml` file:_
+Navigate into the folder
+
+```shell
+  cd rotation-app-api
+```
+
+## Setting up the application locally without Docker
+
+- Apache server required
+
+### 1 - Install dependencies
+
+```shell
+composer install
+```
+
+### 2  - Configure your database access path and user in the  `.env`
+
+For good practice, save this file as  `.env.local` (it will be ignored)
+
+```php
+DATABASE_URL="mysql://symfony:symfony@127.0.0.1:4306/rotation_app?serverVersion=8.0.32&charset=utf8mb4"
+```
+
+### 3 - Create database
+
+```shell
+php bin/console doctrine:database:create
+```
+
+### 4 -  Load Fixtures
+
+```shell
+php bin/console doctrine:fixtures:load
+```
+
+### 5 -  Launch the app
+
+```shell
+symfony serve
+```
+
+Application is accessible in the browser through 127.0.0.1:8000
+
+## Setting up the application locally with Docker
+
+- Create a Docker container for PHP and PHPMyAdmin
+
+Requirements : Docker Desktop or Docker Engine (CLI).
+
+### 1 - Create a `mysql` folder in the root directory of the project.
+
+Database is stored in this folder for data persistence.
+
+### 2 - Configure your database access path and user in the  `.env`
+
+e.g :
+
+```php
+DATABASE_URL="mysql://symfony:symfony@127.0.0.1:4306/rotation_app?serverVersion=8.0.32&charset=utf8mb4"
+```
+
+For good practice, save this file as  `.env.local` (it will be ignored)
+
+_IMPORTANT: If you want to containerize the Symfony app too, `127.0.0.1` does not function within containers. Instead, you need to use the database container name from the `docker-compose.yaml` file:_
 
 e.g : ('127.0.0.1' must be replaced by 'database'  )
 
@@ -26,28 +84,38 @@ e.g : ('127.0.0.1' must be replaced by 'database'  )
 
 ```php
 # .env
-DATABASE_URL="username:password@database:port/database_name"
+DATABASE_URL="username:password@database:port/rotation_app"
 ```
 
-__3__ - At the project root, build and launch PHP and PHPMyAdmin containers using the following command with Docker
+### 3 - At the project root, build and launch PHP and PHPMyAdmin containers
+
+Database "rotation_app" will be created during this process
 
 ```shell
 docker-compose up --build
 ```
 
-__4__ - Install the dependencies in the app/ directory
+### 4 - Install dependencies
 
 ```shell
-cd app && composer install
+composer install
 ```
 
-__5__ - Start the Symfony server (add the -d flag to run in the background)
+### 5 -  Load Fixtures
+
+```shell
+php bin/console doctrine:fixtures:load
+```
+
+### 6 - Start the Symfony server (should be started after the Docker containers)
+
+(add the -d flag to run in the background)
 
 ```shell
 symfony serve
 ```
 
-### Access the application in the browser
+Finaly, you can access to the app and PHPMyAdmin in your browser :
 
 __PHPMyAdmin__ : 127.0.0.1:8899
 __Application__ : 127.0.0.1:8000
