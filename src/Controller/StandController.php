@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Activity;
 use App\Entity\Stand;
 use App\Repository\ActivityRepository;
+use App\Repository\AnimatorRepository;
 use App\Repository\UserRepository;
 use App\Repository\StandRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -57,7 +58,10 @@ class StandController extends AbstractController
      *  "user_id" : 10,
      *  "is_competitive" : true, (default to false)
      * }
+     * 
      * @param Request $request
+     * @param UserRepository $userRepository
+     * @param ActivityRepository $activityRepository
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
@@ -65,23 +69,32 @@ class StandController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_stand', methods: ['POST'])]
-    public function createStand(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
+    public function createStand(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
-        // Extracting user ID from the request content
-        $requestData = json_decode($request->getContent(), true);
-        $userId = $requestData['user'];
-
-        // check if associated User exists
-        $user = $userRepository->find($userId);
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
-        }
-
-
         $stand = $serializer->deserialize($request->getContent(), Stand::class, 'json');
 
-        // Associate found User with the new Stand
-        $stand->setUser($user);
+        // Extracting user ID from the request content
+        $requestData = json_decode($request->getContent(), true);
+
+        // Setting User and Activity to the Team
+        if (!empty($requestData['user'])) {
+            $user = $userRepository->find($requestData['user']);
+            if (!$user) {
+                return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Associate found User with the new Stand
+            $stand->setUser($user);
+        }
+
+        // check if requested Activity exists
+        if (!empty($requestData['activity'])) {
+            $activity = $activityRepository->find($requestData['activity']);
+            if (!$activity) {
+                return new JsonResponse(['error' => 'Activity not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Set found Activity to the team
+            $stand->setActivity($activity);
+        }
 
         // Check if no validation error, if errors -> returns error 400
         $errors = $validator->validate($stand);
@@ -104,14 +117,17 @@ class StandController extends AbstractController
     }
 
     /**
-     * PUT an existing stand
+     * PUT an existing Stand
      * {
      *  "name" : "newLogin",
-     *  "activity_id" : 27
+     *  "activity" : 27,
+     * "animator" : 85
      * }
      * 
      * @param Request $request
      * @param UserRepository $userRepository
+     * @param ActivityRepository $activityRepository
+     * @param AnimatorRepository $animatorRepository
      * @param Stand $currentStand
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
@@ -119,45 +135,45 @@ class StandController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_stand', methods: ['PUT'])]
-    public function updateStand(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, Stand $currentStand, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function updateStand(Request $request, ActivityRepository $activityRepository, AnimatorRepository $animatorRepository, Stand $currentStand, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 
-        // Check if the user exists
-        $user = $userRepository->find($currentStand->getUser());
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        // Extracting activity ID from the request content
+        // Extracting data from the request content
         $requestData = json_decode($request->getContent(), true);
 
-        // if no activity_id provided, null by default
-        $activityId = $requestData['activity'] ?? null;
-
-        // check if requested Activity exists
-        if ($activityId !== null) {
-            $activity = $activityRepository->find($activityId);
+        // Why there is no error and no update if activity_id = 0 ??
+        // check if there is an Activity to update and if it exists
+        if (!empty($requestData['activity'])) {
+            $activity = $activityRepository->find($requestData['activity']);
             if (!$activity) {
                 return new JsonResponse(['error' => 'Activity not found'], Response::HTTP_NOT_FOUND);
             }
+            // Set found Activity to the team
             $currentStand->setActivity($activity);
         }
 
-        $updatedStand = $serializer->deserialize(
+        // check if there is an Animator to update and if it exists
+        if (!empty($requestData['animator'])) {
+            $animator = $animatorRepository->find($requestData['animator']);
+            if (!$animator) {
+                return new JsonResponse(['error' => 'Animator not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Set found Animator to the team
+            $currentStand->setAnimator($animator);
+        }
+
+        // Deserialization and Update Stand without Activity and Animator
+        $serializer->deserialize(
             $request->getContent(),
             Stand::class,
             'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentStand]
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentStand, 'ignored_attributes' => ['activity', 'animator']]
         );
 
-        // Update User and activity field
-        $currentStand->setUser($user)
-            ->setActivity($activity);
-
-        /* The updated stand object is validated using the ValidatorInterface to ensure the data is valid.
+        /* The updated team object is validated using the ValidatorInterface to ensure the data is valid.
         *   If any errors are found, a JSON response with the errors is returned with a HTTP_BAD_REQUEST status
         */
-        $errors = $validator->validate($updatedStand);
+        $errors = $validator->validate($currentStand);
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
