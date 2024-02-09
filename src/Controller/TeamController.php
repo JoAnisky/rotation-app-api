@@ -46,45 +46,73 @@ class TeamController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Create a Team using the following structure 
+     * 
+     * {
+     *  "name" : "teamName",
+     *  "user" : 10 (needed for the moment, see AuthenticationService)
+     * }
+     * 
+     * @param Request $request
+     * @param UserRepository $userRepository
+     * @param ActivityRepository $activityRepository
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/', name: 'create_team', methods: ['POST'])]
-    public function createTeam(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
+    public function createTeam(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
-        // Extracting user ID from the request content
-        $requestData = json_decode($request->getContent(), true);
-        $userId = $requestData['user'] ?? null;
-    
-        // check if associated User exists
-        $user = $userRepository->find($userId);
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
-        }
-    
+        // Create new team object with data provided
         $team = $serializer->deserialize($request->getContent(), Team::class, 'json');
-    
-        // Associate found User with the new Team
-        $team->setUser($user);
-    
-        // Check if no validation error, if errors -> returns error 400
+
+        // Decode request content
+        $requestData = json_decode($request->getContent(), true);
+
+        // Setting User and Activity to the Team
+        if (!empty($requestData['user'])) {
+            $user = $userRepository->find($requestData['user']);
+            if (!$user) {
+                return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Associate found User with the new Team
+            $team->setUser($user);
+        }
+
+        // check if requested Activity exists
+        if (!empty($requestData['activity'])) {
+            $activity = $activityRepository->find($requestData['activity']);
+            if (!$activity) {
+                return new JsonResponse(['error' => 'Activity not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Set found Activity to the team
+            $team->setActivity($activity);
+        }
+
+        // Validate the Team entity before flush
         $errors = $validator->validate($team);
         if (count($errors) > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
-    
+
         // Persist and flush new Team
         $em->persist($team);
         $em->flush();
-    
-        // Sérialize new Team for the response
-        $jsonTeam = $serializer->serialize($team, 'json', ['groups' => 'getTeams']);
-    
-        // Générerate URL "détails" for the new team
+
+        // Generate the "detail" URL for the new Team
         $location = $urlGenerator->generate('detail_team', ['id' => $team->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        // Serialize the new Team for the response
+        $jsonTeam = $serializer->serialize($team, 'json', ['groups' => 'getTeams']);
 
         // return 201 with new Team and details URL
         return new JsonResponse($jsonTeam, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
- /**
+    /**
      * PUT an existing team
      * {
      *  "name" : "newLogin",
@@ -106,18 +134,16 @@ class TeamController extends AbstractController
         // Extracting activity ID from the request content
         $requestData = json_decode($request->getContent(), true);
 
-        // if no activity_id provided, null by default
-        $activityId = $requestData['activity'] ?? null;
-
-        // check if requested Activity exists
-        if ($activityId !== null) {
-            $activity = $activityRepository->find($activityId);
+         // check if requested Activity exists
+         if (!empty($requestData['activity'])) {
+            $activity = $activityRepository->find($requestData['activity']);
             if (!$activity) {
                 return new JsonResponse(['error' => 'Activity not found'], Response::HTTP_NOT_FOUND);
             }
+            // Set found Activity to the team
             $currentTeam->setActivity($activity);
         }
-        
+
         // Deserialization and Update Team without Activity
         $serializer->deserialize(
             $request->getContent(),
@@ -125,7 +151,6 @@ class TeamController extends AbstractController
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentTeam, 'ignored_attributes' => ['activity']]
         );
-
 
         /* The updated team object is validated using the ValidatorInterface to ensure the data is valid.
         *   If any errors are found, a JSON response with the errors is returned with a HTTP_BAD_REQUEST status

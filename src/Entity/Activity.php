@@ -17,7 +17,7 @@ class Activity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getStands"])]
+    #[Groups(["getStands", "getAnimators", "getTeams"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
