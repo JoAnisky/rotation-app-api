@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[HasLifecycleCallbacks]
@@ -21,33 +22,45 @@ class Activity
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getActivity"])]
+    #[Assert\NotBlank(message: "Le champ nom est obligatoire")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $activity_date = null;
 
     #[ORM\Column]
+    #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(["getActivity"])]
     private array $statut = [];
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["getActivity"])]
     private ?int $nb_participants = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["getActivity"])]
     private ?int $nb_teams = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(["getActivity"])]
     private ?\DateTimeInterface $global_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(["getActivity"])]
     private ?\DateTimeInterface $rotation_duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(["getActivity"])]
     private ?\DateTimeInterface $stand_duration = null;
 
-    #[ORM\OneToMany(mappedBy: 'activity_id', targetEntity: Team::class)]
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Team::class)]
+    #[Groups(["getActivity"])]
     private Collection $team;
 
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]

@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\StandRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: StandRepository::class)]
 class Stand
 {
@@ -16,6 +18,8 @@ class Stand
 
     #[ORM\Column(length: 255)]
     #[Groups(["getStands"])]
+    #[Assert\NotBlank(message: "Le champ nom est obligatoire")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $name = null;
 
     #[ORM\Column]

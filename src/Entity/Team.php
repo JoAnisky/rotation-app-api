@@ -13,7 +13,7 @@ class Team
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getTeams"])]
+    #[Groups(["getTeams", "getActivity"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
