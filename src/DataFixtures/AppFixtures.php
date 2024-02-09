@@ -27,7 +27,13 @@ class AppFixtures extends Fixture
 
     public function createUsers(ObjectManager $manager): void
     {
-        // Admin User creation 
+        // Standard User creation 
+        $user = new User();
+        $user->setLogin("user")
+            ->setPassword($this->userPasswordHasher->hashPassword($user, "user"));
+        $manager->persist($user);
+
+        //  Admin User creation 
         $userAdmin = new User();
         $userAdmin->setLogin("admin")
             ->setRoles(['ROLE_ADMIN'])

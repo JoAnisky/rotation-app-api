@@ -27,6 +27,7 @@ class Animator
     private ?Stand $stand = null;
 
     #[ORM\ManyToOne(inversedBy: 'animators')]
+    #[Groups(["getAnimators"])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
