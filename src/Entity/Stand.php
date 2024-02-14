@@ -32,6 +32,7 @@ class Stand
     private ?Animator $animator = null;
 
     #[ORM\ManyToOne(inversedBy: 'stand', cascade: ['persist'])]
+    #[ORM\JoinColumn(name:'activity_id', referencedColumnName:'id', onDelete:'SET NULL')]
     #[Groups(["getStands"])]
     private ?Activity $activity = null;
 

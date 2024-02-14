@@ -24,6 +24,7 @@ class Team
 
 
     #[ORM\ManyToOne(inversedBy: 'team_id')]
+    #[ORM\JoinColumn(name:'activity_id', referencedColumnName:'id', onDelete:'SET NULL')]
     #[Groups(["getTeams"])]
     private ?Activity $activity = null;
 
