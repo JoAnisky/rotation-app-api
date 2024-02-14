@@ -7,7 +7,6 @@ use App\Repository\ActivityRepository;
 use App\Repository\StandRepository;
 use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
-use App\Service\ActivityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,23 +40,17 @@ class ActivityController extends AbstractController
 
     /**
      * @param Activity $activity
-     * @param ActivityService $activityService
      * @param StandRepository $standRepository
      * @param TeamRepository $teamRepository
      * @param EntityManagerInterface $em
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'delete_activity', methods: ['DELETE'])]
-    public function deleteActivity(Activity $activity, ActivityService $activityService, StandRepository $standRepository, TeamRepository $teamRepository, EntityManagerInterface $em): JsonResponse
+    public function deleteActivity(Activity $activity, EntityManagerInterface $em): JsonResponse
     {
         $em->getConnection()->beginTransaction(); // Start transaction
 
         try {
-            /* Before deleting an Activity, check if there is an activity_id in "Stand" and "Team" tables
-            In this case, set activity_id to null
-            (Avoid SQLSTATE[23000]: Integrity constraint violation: 1451 Cannot delete or update a parent row) */
-            $activityService->nullifyActivityRelations($standRepository->findBy(['activity' => $activity]), $em);
-            $activityService->nullifyActivityRelations($teamRepository->findBy(['activity' => $activity]), $em);
 
             $em->remove($activity);
             $em->flush(); // Persist changes
@@ -133,7 +126,8 @@ class ActivityController extends AbstractController
 
     /** PUT an existing activity
      * {
-     * "name" : "newLogin",
+     * "name" : "new Activity name",
+     * "global_duration" : 4500
      * "activity_id" : 27
      * }
      * 
