@@ -16,7 +16,9 @@ Navigate into the folder
 
 ## Setting up the application locally without Docker
 
-- Apache server required
+---
+
+- Apache server and PHP 8.1 required
 
 ### 1 - Install dependencies
 
@@ -38,29 +40,40 @@ DATABASE_URL="mysql://symfony:symfony@127.0.0.1:4306/rotation_app?serverVersion=
 php bin/console doctrine:database:create
 ```
 
-### 4 -  Load Fixtures
+### 4 - Make migrations
+
+This command will create tables in your database corresponding to your entities.
+
+```shell
+php bin/console doctrine:migrations:migrate
+```
+
+### 5 -  Load Fixtures
 
 ```shell
 php bin/console doctrine:fixtures:load
 ```
 
-### 5 -  Launch the app
+### 6 -  Launch the app
 
 ```shell
 symfony serve
 ```
 
 Application is accessible in the browser through 127.0.0.1:8000
+Access PHPMyAdmin to view database
 
 ## Setting up the application locally with Docker
+
+---
 
 - Create a Docker container for PHP and PHPMyAdmin
 
 Requirements : Docker Desktop or Docker Engine (CLI).
 
-### 1 - Create a `mysql` folder in the root directory of the project.
+### 1 - Create a `mysql` folder in the root directory of the project
 
-Database is stored in this folder for data persistence.
+Database is stored in this folder for data persistence (ignored by .gitignore)
 
 ### 2 - Configure your database access path and user in the  `.env`
 
@@ -101,7 +114,15 @@ docker-compose up --build
 composer install
 ```
 
-### 5 -  Load Fixtures
+### 5 - Make migrations
+
+This command will create tables in your database corresponding to your entities.
+
+```shell
+php bin/console doctrine:migrations:migrate
+```
+
+### 6 -  Load Fixtures
 
 ```shell
 php bin/console doctrine:fixtures:load
