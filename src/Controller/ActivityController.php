@@ -67,12 +67,12 @@ class ActivityController extends AbstractController
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             $em->getConnection()->rollBack(); // Roll back on error
-            
+
             // Return a JsonResponse indicating an error
             return new JsonResponse([
                 'error' => 'An unexpected error occurred.',
                 'message' => $e->getMessage() // Optionally include the exception message for debugging
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); // Use an appropriate HTTP status code
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -129,5 +129,41 @@ class ActivityController extends AbstractController
 
         // return 201 with new Activity and details URL
         return new JsonResponse($jsonActivity, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
+    }
+
+    /** PUT an existing activity
+     * {
+     * "name" : "newLogin",
+     * "activity_id" : 27
+     * }
+     * 
+     * @param Request $request
+     * @param Activity $currentActivity
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */ 
+    #[Route('/{id}', name: 'update_activity', methods: ['PUT'])] 
+    public function updateActivity(Request $request,  Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    {
+        // // Extracting activity ID from the request content
+        // $requestData = json_decode($request->getContent(), true);
+
+        // Deserialization and Update Activity without Activity
+        $serializer->deserialize($request->getContent(),Activity::class,'json',[AbstractNormalizer::OBJECT_TO_POPULATE => $currentActivity]);
+
+        /* The updated activity object is validated using the ValidatorInterface to ensure the data is valid.
+        *  If any errors are found, a JSON response with the errors is returned with a HTTP_BAD_REQUEST status*/
+        $errors = $validator->validate($currentActivity);
+
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $em->flush();
+        // A JsonResponse with a HTTP_NO_CONTENT status code 204, indicating successful update without any content in the response body.
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
