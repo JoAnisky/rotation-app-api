@@ -47,15 +47,15 @@ class Activity
     #[Groups(["getActivity"])]
     private ?int $nb_teams = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(["getActivity"])]
-    private ?\DateTimeInterface $global_duration = null;
+    private ?int $global_duration = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(["getActivity"])]
     private ?\DateTimeInterface $rotation_duration = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(["getActivity"])]
     private ?\DateTimeInterface $stand_duration = null;
 
@@ -162,36 +162,36 @@ class Activity
         return $this;
     }
 
-    public function getGlobalDuration(): ?\DateTimeInterface
+    public function getGlobalDuration(): ?int
     {
         return $this->global_duration;
     }
 
-    public function setGlobalDuration(?\DateTimeInterface $global_duration): static
+    public function setGlobalDuration(?int $global_duration): static
     {
         $this->global_duration = $global_duration;
 
         return $this;
     }
 
-    public function getRotationDuration(): ?\DateTimeInterface
+    public function getRotationDuration(): ?int
     {
         return $this->rotation_duration;
     }
 
-    public function setRotationDuration(?\DateTimeInterface $rotation_duration): static
+    public function setRotationDuration(?int $rotation_duration): static
     {
         $this->rotation_duration = $rotation_duration;
 
         return $this;
     }
 
-    public function getStandDuration(): ?\DateTimeInterface
+    public function getStandDuration(): ?int
     {
         return $this->stand_duration;
     }
 
-    public function setStandDuration(?\DateTimeInterface $stand_duration): static
+    public function setStandDuration(?int $stand_duration): static
     {
         $this->stand_duration = $stand_duration;
 
