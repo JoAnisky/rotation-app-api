@@ -18,10 +18,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-#[Route('/activities')]
+#[Route('/activity')]
 class ActivityController extends AbstractController
 {
-    #[Route('/', name: 'activities', methods: ['GET'])]
+    #[Route('/all', name: 'activity', methods: ['GET'])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
         $activitiesList = $activityRepository->findAll();
@@ -29,7 +29,7 @@ class ActivityController extends AbstractController
         return new JsonResponse($jsonActivitiesList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'detail_activity', methods: ['GET'])]
+    #[Route('/details/{id}', name: 'detail_activity', methods: ['GET'])]
     public function getDetailActivity(Activity $activity, SerializerInterface $serializer): JsonResponse
     {
         // If no activity ParamConverter will throw an Exception
@@ -45,7 +45,7 @@ class ActivityController extends AbstractController
      * @param EntityManagerInterface $em
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'delete_activity', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_activity', methods: ['DELETE'])]
     public function deleteActivity(Activity $activity, EntityManagerInterface $em): JsonResponse
     {
         $em->getConnection()->beginTransaction(); // Start transaction
@@ -85,7 +85,7 @@ class ActivityController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/', name: 'create_activity', methods: ['POST'])]
+    #[Route('/create', name: 'create_activity', methods: ['POST'])]
     public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Create new activity object with data provided
@@ -139,7 +139,7 @@ class ActivityController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */ 
-    #[Route('/{id}', name: 'update_activity', methods: ['PUT'])] 
+    #[Route('/update/{id}', name: 'update_activity', methods: ['PUT'])] 
     public function updateActivity(Request $request,  Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // // Extracting activity ID from the request content
