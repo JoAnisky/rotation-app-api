@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/stands')]
 class StandController extends AbstractController
 {
-    #[Route('/', name: 'stands', methods: ['GET'])]
+    #[Route('/all', name: 'stands', methods: ['GET'])]
     public function getStandsList(StandRepository $standRepository, SerializerInterface $serializer): JsonResponse
     {
         $standsList = $standRepository->findAll();
@@ -30,7 +30,7 @@ class StandController extends AbstractController
         return new JsonResponse($jsonStandsList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'detail_stand', methods: ['GET'])]
+    #[Route('/details/{id}', name: 'detail_stand', methods: ['GET'])]
     public function getOneStand(Stand $stand, SerializerInterface $serializer): JsonResponse
     {
         // If stand doesn't ParamConverter will throw an Exception
@@ -40,7 +40,7 @@ class StandController extends AbstractController
         return new JsonResponse($jsonStand, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'delete_stand', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_stand', methods: ['DELETE'])]
     public function deleteStand(Stand $stand, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($stand);
@@ -68,7 +68,7 @@ class StandController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/', name: 'create_stand', methods: ['POST'])]
+    #[Route('/create', name: 'create_stand', methods: ['POST'])]
     public function createStand(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         $stand = $serializer->deserialize($request->getContent(), Stand::class, 'json');
@@ -134,7 +134,7 @@ class StandController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'update_stand', methods: ['PUT'])]
+    #[Route('/update/{id}', name: 'update_stand', methods: ['PUT'])]
     public function updateStand(Request $request, ActivityRepository $activityRepository, AnimatorRepository $animatorRepository, Stand $currentStand, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 

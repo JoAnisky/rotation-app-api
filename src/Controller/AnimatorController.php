@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/animators')]
 class AnimatorController extends AbstractController
 {
-    #[Route('/', name: 'animators', methods: ['GET'])]
+    #[Route('/all', name: 'animators', methods: ['GET'])]
     public function getAnimatorsList(AnimatorRepository $animatorRepository, SerializerInterface $serializer): JsonResponse
     {
         $animatorsList = $animatorRepository->findAll();
@@ -27,7 +27,7 @@ class AnimatorController extends AbstractController
         return new JsonResponse($jsonAnimatorsList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'detail_animator', methods: ['GET'])]
+    #[Route('/details/{id}', name: 'detail_animator', methods: ['GET'])]
     public function getDetailAnimator(Animator $animator, SerializerInterface $serializer): JsonResponse
     {
         // If animator doesn't ParamConverter will throw an Exception
@@ -37,7 +37,7 @@ class AnimatorController extends AbstractController
         return new JsonResponse($jsonAnimator, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'delete_animator', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_animator', methods: ['DELETE'])]
     public function deleteAnimator(Animator $animator, EntityManagerInterface $em): JsonResponse
     {
 
@@ -63,7 +63,7 @@ class AnimatorController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/', name: 'create_animator', methods: ['POST'])]
+    #[Route('/create', name: 'create_animator', methods: ['POST'])]
     public function createAnimator(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {        
         // Create new Animator object with data provided
@@ -115,7 +115,7 @@ class AnimatorController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'update_animator', methods: ['PUT'])]
+    #[Route('/update/{id}', name: 'update_animator', methods: ['PUT'])]
     public function updateAnimator(Request $request, Animator $currentAnimator, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 

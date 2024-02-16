@@ -35,7 +35,7 @@ class GamemasterController extends AbstractController
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/', name: 'gamemaster', methods: ['GET'])]
+    #[Route('/all', name: 'gamemaster', methods: ['GET'])]
     public function getGamemasters(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $gamemasterList = $userRepository->getUsersByRole("ROLE_GAMEMASTER");
@@ -54,7 +54,7 @@ class GamemasterController extends AbstractController
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/{gamemasterId}', name: 'detail_gamemaster', methods: ['GET'])]
+    #[Route('/details/{gamemasterId}', name: 'detail_gamemaster', methods: ['GET'])]
     public function getOneGamemaster(int $gamemasterId, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $gamemaster = $userRepository->getUserByRoleAndId("ROLE_GAMEMASTER", $gamemasterId);
@@ -75,7 +75,7 @@ class GamemasterController extends AbstractController
      * @param EntityManagerInterface $em
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'delete_gamemaster', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_gamemaster', methods: ['DELETE'])]
     public function deleteGamemaster(User $user, EntityManagerInterface $em): JsonResponse
     {
         // Check if the user has the "gamemaster" role
@@ -105,7 +105,7 @@ class GamemasterController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/', name: 'create_gamemaster', methods: ['POST'])]
+    #[Route('/create', name: 'create_gamemaster', methods: ['POST'])]
     public function createGamemaster(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Deserialize $request->getcontent
@@ -153,7 +153,7 @@ class GamemasterController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'update_gamemaster', methods: ['PUT'])]
+    #[Route('/update/{id}', name: 'update_gamemaster', methods: ['PUT'])]
     public function updateGamemaster(Request $request, User $currentUser, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // Check if the user has the "gamemaster" role

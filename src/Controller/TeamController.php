@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/teams')]
 class TeamController extends AbstractController
 {
-    #[Route('/', name: 'teams', methods: ['GET'])]
+    #[Route('/all', name: 'teams', methods: ['GET'])]
     public function getTeamsList(TeamRepository $teamRepository, SerializerInterface $serializer): JsonResponse
     {
         $teamsList = $teamRepository->findAll();
@@ -28,7 +28,7 @@ class TeamController extends AbstractController
         return new JsonResponse($jsonTeamsList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'detail_team', methods: ['GET'])]
+    #[Route('/details/{id}', name: 'detail_team', methods: ['GET'])]
     public function getOneTeam(Team $team, SerializerInterface $serializer): JsonResponse
     {
         // If team doesn't ParamConverter will throw an Exception
@@ -38,7 +38,7 @@ class TeamController extends AbstractController
         return new JsonResponse($jsonTeam, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'delete_team', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_team', methods: ['DELETE'])]
     public function deleteTeam(Team $team, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($team);
@@ -63,7 +63,7 @@ class TeamController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/', name: 'create_team', methods: ['POST'])]
+    #[Route('/create', name: 'create_team', methods: ['POST'])]
     public function createTeam(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Create new team object with data provided
@@ -127,7 +127,7 @@ class TeamController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'update_team', methods: ['PUT'])]
+    #[Route('/update/{id}', name: 'update_team', methods: ['PUT'])]
     public function updateTeam(Request $request, ActivityRepository $activityRepository, Team $currentTeam, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 
