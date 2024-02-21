@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/activity')]
@@ -46,7 +47,9 @@ class ActivityController extends AbstractController
      * @param EntityManagerInterface $em
      * @return JsonResponse
      */
+    // #[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits pour accèder à cette section')]
     #[Route('/delete/{id}', name: 'delete_activity', methods: ['DELETE'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteActivity(Activity $activity, EntityManagerInterface $em): JsonResponse
     {
         $em->getConnection()->beginTransaction(); // Start transaction
@@ -87,6 +90,7 @@ class ActivityController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/create', name: 'create_activity', methods: ['POST'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Create new activity object with data provided
@@ -141,6 +145,7 @@ class ActivityController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/update/{id}', name: 'update_activity', methods: ['PUT'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateActivity(Request $request,  Activity $currentActivity, ActivityService $activityService, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // // Extracting activity ID from the request content

@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/animators')]
@@ -36,8 +37,8 @@ class AnimatorController extends AbstractController
         $jsonAnimator = $serializer->serialize($animator, 'json', ['groups' => 'getAnimators']);
         return new JsonResponse($jsonAnimator, Response::HTTP_OK, [], true);
     }
-
     #[Route('/delete/{id}', name: 'delete_animator', methods: ['DELETE'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteAnimator(Animator $animator, EntityManagerInterface $em): JsonResponse
     {
 
@@ -64,6 +65,7 @@ class AnimatorController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/create', name: 'create_animator', methods: ['POST'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createAnimator(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {        
         // Create new Animator object with data provided
@@ -116,6 +118,7 @@ class AnimatorController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/update/{id}', name: 'update_animator', methods: ['PUT'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateAnimator(Request $request, Animator $currentAnimator, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 

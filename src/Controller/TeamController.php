@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\ActivityRepository;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/teams')]
@@ -39,6 +40,7 @@ class TeamController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'delete_team', methods: ['DELETE'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteTeam(Team $team, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($team);
@@ -64,6 +66,7 @@ class TeamController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/create', name: 'create_team', methods: ['POST'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createTeam(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Create new team object with data provided
@@ -128,6 +131,7 @@ class TeamController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/update/{id}', name: 'update_team', methods: ['PUT'])]
+    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateTeam(Request $request, ActivityRepository $activityRepository, Team $currentTeam, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 
