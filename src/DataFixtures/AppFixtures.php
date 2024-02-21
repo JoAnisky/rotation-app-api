@@ -47,6 +47,13 @@ class AppFixtures extends Fixture
             ->setPassword($this->userPasswordHasher->hashPassword($userGamemaster, "gamemaster"));
         $manager->persist($userGamemaster);
 
+        //  SuperAdmin User creation 
+        $userAdmin = new User();
+        $userAdmin->setLogin("superadmin")
+            ->setRoles(['ROLE_SUPER_ADMIN'])
+            ->setPassword($this->userPasswordHasher->hashPassword($userAdmin, "superadmin"));
+        $manager->persist($userAdmin);
+                
         $manager->flush();
 
         // Create Animators
