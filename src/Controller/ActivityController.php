@@ -7,6 +7,7 @@ use App\Repository\ActivityRepository;
 use App\Repository\StandRepository;
 use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
+use App\Service\ActivityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -138,25 +139,32 @@ class ActivityController extends AbstractController
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
      * @return JsonResponse
-     */ 
-    #[Route('/update/{id}', name: 'update_activity', methods: ['PUT'])] 
-    public function updateActivity(Request $request,  Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+     */
+    #[Route('/update/{id}', name: 'update_activity', methods: ['PUT'])]
+    public function updateActivity(Request $request,  Activity $currentActivity, ActivityService $activityService, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // // Extracting activity ID from the request content
         // $requestData = json_decode($request->getContent(), true);
 
         // Deserialization and Update Activity without Activity
-        $serializer->deserialize($request->getContent(),Activity::class,'json',[AbstractNormalizer::OBJECT_TO_POPULATE => $currentActivity]);
+        $serializer->deserialize($request->getContent(), Activity::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentActivity]);
 
         /* The updated activity object is validated using the ValidatorInterface to ensure the data is valid.
         *  If any errors are found, a JSON response with the errors is returned with a HTTP_BAD_REQUEST status*/
         $errors = $validator->validate($currentActivity);
 
         if ($errors->count() > 0) {
+            // Srialize data
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
         $em->flush();
+
+        // Génération du fichier JSON avec les données de l'objet Activity mis à jour
+
+        $jsonActivity = $serializer->serialize($currentActivity, 'json');
+
+        //$activityService->generateJson($jsonActivity);
         // A JsonResponse with a HTTP_NO_CONTENT status code 204, indicating successful update without any content in the response body.
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
