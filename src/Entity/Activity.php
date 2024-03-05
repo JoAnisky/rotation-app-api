@@ -35,9 +35,9 @@ class Activity
     #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::SMALLINT)]
     #[Groups(["getActivity"])]
-    private array $statut = [];
+    private int $statusCode = 0;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
@@ -66,18 +66,18 @@ class Activity
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]
     private Collection $stand;
 
-    #[ORM\ManyToOne(inversedBy: 'activities')]
+    #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    #[Groups(["getActivity"])]
     private ?string $activity_start_time = null;
 
     public function __construct()
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
-        $this->statut = ['Non démarrée', 'En cours', 'Rotation', 'Pause', 'Terminée'];
     }
 
     public function getId(): ?int
@@ -129,14 +129,14 @@ class Activity
         }
     }
 
-    public function getStatut(): array
+    public function getStatusCode(): int
     {
-        return $this->statut;
+        return $this->statusCode;
     }
 
-    public function setStatut(array $statut): static
+    public function setStatusCode(array $statusCode): static
     {
-        $this->statut = $statut;
+        $this->statusCode = $statusCode;
 
         return $this;
     }
