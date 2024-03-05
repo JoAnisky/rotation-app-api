@@ -55,7 +55,7 @@ class UserController extends AbstractController
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/details/{id}', name: 'detail_user', methods: ['GET'])]
+    #[Route('/{id}', name: 'detail_user', methods: ['GET'])]
     public function getOneUser(User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $currentUser = $userRepository->find($user);
@@ -76,7 +76,7 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $em
      * @return JsonResponse
      */
-    #[Route('/delete/{id}', name: 'delete_user', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
     public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
 
@@ -102,7 +102,7 @@ class UserController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/create', name: 'create_user', methods: ['POST'])]
+    #[Route('/', name: 'create_user', methods: ['POST'])]
     public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse 
     {
         // Deserialize $request->getcontent
@@ -148,7 +148,7 @@ class UserController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/update/{id}', name: 'update_user', methods: ['PUT'])]
+    #[Route('/{id}', name: 'update_user', methods: ['PUT'])]
     public function updateUser(Request $request, User $currentUser, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         /* The request body is deserialized into an existing User object ($currentUser) using the OBJECT_TO_POPULATE option.

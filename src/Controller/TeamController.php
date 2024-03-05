@@ -29,7 +29,7 @@ class TeamController extends AbstractController
         return new JsonResponse($jsonTeamsList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/details/{id}', name: 'detail_team', methods: ['GET'])]
+    #[Route('/{id}', name: 'detail_team', methods: ['GET'])]
     public function getOneTeam(Team $team, SerializerInterface $serializer): JsonResponse
     {
         // If team doesn't ParamConverter will throw an Exception
@@ -39,7 +39,7 @@ class TeamController extends AbstractController
         return new JsonResponse($jsonTeam, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/delete/{id}', name: 'delete_team', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete_team', methods: ['DELETE'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteTeam(Team $team, EntityManagerInterface $em): JsonResponse
     {
@@ -65,7 +65,7 @@ class TeamController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/create', name: 'create_team', methods: ['POST'])]
+    #[Route('/', name: 'create_team', methods: ['POST'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createTeam(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
@@ -130,7 +130,7 @@ class TeamController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/update/{id}', name: 'update_team', methods: ['PUT'])]
+    #[Route('/{id}', name: 'update_team', methods: ['PUT'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateTeam(Request $request, ActivityRepository $activityRepository, Team $currentTeam, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
