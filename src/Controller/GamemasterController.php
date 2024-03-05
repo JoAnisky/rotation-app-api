@@ -38,7 +38,7 @@ class GamemasterController extends AbstractController
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
-    #[Route('/all', name: 'gamemaster', methods: ['GET'])]
+    #[Route('/', name: 'gamemaster', methods: ['GET'])]
     public function getGamemasters(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $gamemasterList = $userRepository->getUsersByRole("ROLE_GAMEMASTER");

@@ -23,7 +23,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/stands')]
 class StandController extends AbstractController
 {
-    #[Route('/all', name: 'stands', methods: ['GET'])]
+    #[Route('/', name: 'stands', methods: ['GET'])]
     public function getStandsList(StandRepository $standRepository, SerializerInterface $serializer): JsonResponse
     {
         $standsList = $standRepository->findAll();

@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/animators')]
 class AnimatorController extends AbstractController
 {
-    #[Route('/all', name: 'animators', methods: ['GET'])]
+    #[Route('/', name: 'animators', methods: ['GET'])]
     public function getAnimatorsList(AnimatorRepository $animatorRepository, SerializerInterface $serializer): JsonResponse
     {
         $animatorsList = $animatorRepository->findAll();

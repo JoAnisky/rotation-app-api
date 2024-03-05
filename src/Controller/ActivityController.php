@@ -23,7 +23,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/activity')]
 class ActivityController extends AbstractController
 {
-    #[Route('/all', name: 'activity', methods: ['GET'])]
+    #[Route('/', name: 'activity', methods: ['GET'])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
         $activitiesList = $activityRepository->findAll();

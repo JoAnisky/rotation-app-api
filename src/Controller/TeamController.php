@@ -21,7 +21,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/teams')]
 class TeamController extends AbstractController
 {
-    #[Route('/all', name: 'teams', methods: ['GET'])]
+    #[Route('/', name: 'teams', methods: ['GET'])]
     public function getTeamsList(TeamRepository $teamRepository, SerializerInterface $serializer): JsonResponse
     {
         $teamsList = $teamRepository->findAll();
