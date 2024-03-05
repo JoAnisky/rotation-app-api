@@ -70,6 +70,9 @@ class Activity
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    private ?string $activity_start_time = null;
+
     public function __construct()
     {
         $this->team = new ArrayCollection();
@@ -266,6 +269,18 @@ class Activity
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getActivityStartTime(): ?string
+    {
+        return $this->activity_start_time;
+    }
+
+    public function setActivityStartTime(?string $activity_start_time): static
+    {
+        $this->activity_start_time = $activity_start_time;
 
         return $this;
     }
