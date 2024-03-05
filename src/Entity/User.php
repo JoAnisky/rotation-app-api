@@ -46,6 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $stands;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Activity::class)]
+    #[Groups(["getActivity"])]
     private Collection $activities;
 
     public function __construct()
