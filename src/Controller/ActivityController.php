@@ -145,7 +145,7 @@ class ActivityController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_activity', methods: ['PUT'])]
-    //#[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
+    // #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateActivity(Request $request,  Activity $currentActivity, ActivityService $activityService, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // // Extracting activity ID from the request content
@@ -167,7 +167,7 @@ class ActivityController extends AbstractController
 
         // Génération du fichier JSON avec les données de l'objet Activity mis à jour
 
-        $jsonActivity = $serializer->serialize($currentActivity, 'json');
+        // $jsonActivity = $serializer->serialize($currentActivity, 'json');
 
         //$activityService->generateJson($jsonActivity);
         // A JsonResponse with a HTTP_NO_CONTENT status code 204, indicating successful update without any content in the response body.

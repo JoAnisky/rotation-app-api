@@ -11,6 +11,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+enum Status: string
+{
+    case NOT_STARTED = 'NOT_STARTED';
+    case ROTATING = 'ROTATING';
+    case IN_PROGRESS = 'IN_PROGRESS';
+    case PAUSED = 'PAUSED';
+    case COMPLETED = 'COMPLETED';
+}
+
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[HasLifecycleCallbacks]
 class Activity
@@ -35,9 +44,9 @@ class Activity
     #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::SMALLINT)]
+    #[ORM\Column(type: 'string', enumType: Status::class)]
     #[Groups(["getActivity"])]
-    private int $statusCode = 0;
+    private Status $status = Status::NOT_STARTED;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
@@ -68,6 +77,7 @@ class Activity
 
     #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["getActivity"])]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
@@ -78,6 +88,7 @@ class Activity
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
+        $this->status = Status::NOT_STARTED; // Default status
     }
 
     public function getId(): ?int
@@ -129,14 +140,14 @@ class Activity
         }
     }
 
-    public function getStatusCode(): int
+    public function getStatus(): Status
     {
-        return $this->statusCode;
+        return $this->status;
     }
 
-    public function setStatusCode(array $statusCode): static
+    public function setStatus(Status $status): self
     {
-        $this->statusCode = $statusCode;
+        $this->status = $status;
 
         return $this;
     }
