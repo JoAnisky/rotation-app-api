@@ -77,7 +77,6 @@ class Activity
 
     #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["getActivity"])]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
