@@ -14,6 +14,7 @@ class ApiLoginController extends AbstractController
     #[Route('/login', name: 'login', methods: ['POST'])]
     public function index(#[CurrentUser] ?User $user): Response
     {
+       
         if (null === $user) {
             return $this->json([
                 'message' => 'missing credentials',
