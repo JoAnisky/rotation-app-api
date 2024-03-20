@@ -11,6 +11,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+enum Status: string
+{
+    case NOT_STARTED = 'NOT_STARTED';
+    case ROTATING = 'ROTATING';
+    case IN_PROGRESS = 'IN_PROGRESS';
+    case PAUSED = 'PAUSED';
+    case COMPLETED = 'COMPLETED';
+}
+
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[HasLifecycleCallbacks]
 class Activity
@@ -35,9 +44,9 @@ class Activity
     #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'string', enumType: Status::class)]
     #[Groups(["getActivity"])]
-    private array $statut = [];
+    private Status $status = Status::NOT_STARTED;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
@@ -66,15 +75,19 @@ class Activity
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]
     private Collection $stand;
 
-    #[ORM\ManyToOne(inversedBy: 'activities')]
+    #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    #[Groups(["getActivity"])]
+    private ?string $activity_start_time = null;
 
     public function __construct()
     {
         $this->team = new ArrayCollection();
         $this->stand = new ArrayCollection();
-        $this->statut = ['Non démarrée', 'En cours', 'Rotation', 'Pause', 'Terminée'];
+        $this->status = Status::NOT_STARTED; // Default status
     }
 
     public function getId(): ?int
@@ -126,14 +139,14 @@ class Activity
         }
     }
 
-    public function getStatut(): array
+    public function getStatus(): Status
     {
-        return $this->statut;
+        return $this->status;
     }
 
-    public function setStatut(array $statut): static
+    public function setStatus(Status $status): self
     {
-        $this->statut = $statut;
+        $this->status = $status;
 
         return $this;
     }
@@ -266,6 +279,18 @@ class Activity
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getActivityStartTime(): ?string
+    {
+        return $this->activity_start_time;
+    }
+
+    public function setActivityStartTime(?string $activity_start_time): static
+    {
+        $this->activity_start_time = $activity_start_time;
 
         return $this;
     }

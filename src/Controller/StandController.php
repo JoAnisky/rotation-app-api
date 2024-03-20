@@ -23,7 +23,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/stands')]
 class StandController extends AbstractController
 {
-    #[Route('/all', name: 'stands', methods: ['GET'])]
+    #[Route('/', name: 'stands', methods: ['GET'])]
     public function getStandsList(StandRepository $standRepository, SerializerInterface $serializer): JsonResponse
     {
         $standsList = $standRepository->findAll();
@@ -31,7 +31,7 @@ class StandController extends AbstractController
         return new JsonResponse($jsonStandsList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/details/{id}', name: 'detail_stand', methods: ['GET'])]
+    #[Route('/{id}', name: 'detail_stand', methods: ['GET'])]
     public function getOneStand(Stand $stand, SerializerInterface $serializer): JsonResponse
     {
         // If stand doesn't ParamConverter will throw an Exception
@@ -41,7 +41,7 @@ class StandController extends AbstractController
         return new JsonResponse($jsonStand, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/delete/{id}', name: 'delete_stand', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete_stand', methods: ['DELETE'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteStand(Stand $stand, EntityManagerInterface $em): JsonResponse
     {
@@ -70,7 +70,7 @@ class StandController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/create', name: 'create_stand', methods: ['POST'])]
+    #[Route('/', name: 'create_stand', methods: ['POST'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createStand(Request $request, UserRepository $userRepository, ActivityRepository $activityRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
@@ -137,7 +137,7 @@ class StandController extends AbstractController
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    #[Route('/update/{id}', name: 'update_stand', methods: ['PUT'])]
+    #[Route('/{id}', name: 'update_stand', methods: ['PUT'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateStand(Request $request, ActivityRepository $activityRepository, AnimatorRepository $animatorRepository, Stand $currentStand, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
