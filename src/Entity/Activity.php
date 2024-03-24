@@ -73,6 +73,7 @@ class Activity
     private Collection $team;
 
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]
+    #[Groups(["getActivity"])]
     private Collection $stand;
 
     #[ORM\ManyToOne(inversedBy: 'activity')]
