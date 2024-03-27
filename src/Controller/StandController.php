@@ -138,7 +138,7 @@ class StandController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_stand', methods: ['PUT'])]
-    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
+    // #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateStand(Request $request, ActivityRepository $activityRepository, AnimatorRepository $animatorRepository, Stand $currentStand, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 
