@@ -23,11 +23,9 @@ class Animator
     private ?string $name = null;
 
     #[ORM\OneToOne(mappedBy: 'animator', cascade: ['persist', 'remove'])]
-    #[Groups(["getAnimators"])]
     private ?Stand $stand = null;
 
     #[ORM\ManyToOne(inversedBy: 'animators')]
-    #[Groups(["getAnimators"])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
