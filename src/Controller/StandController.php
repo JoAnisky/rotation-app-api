@@ -162,7 +162,15 @@ class StandController extends AbstractController
             if (!$animator) {
                 return new JsonResponse(['error' => 'Animator not found'], Response::HTTP_NOT_FOUND);
             }
-            // Set found Animator to the team
+            // Find and dissociate the animator from any existing stand
+            $existingStand = $em->getRepository(Stand::class)->findOneBy(['animator' => $animator]);
+            
+            if ($existingStand) {
+                $existingStand->setAnimator(null);
+                $em->persist($existingStand);
+                $em->flush();
+            }
+            // Set found Animator to the stand
             $currentStand->setAnimator($animator);
         }
 
@@ -181,7 +189,8 @@ class StandController extends AbstractController
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
-
+        // Persist the changes
+        $em->persist($currentStand);
         $em->flush();
 
         // A JsonResponse with a HTTP_NO_CONTENT status code 204 is returned, indicating successful update without any content in the response body.
