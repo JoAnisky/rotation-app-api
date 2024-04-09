@@ -90,6 +90,9 @@ class Activity
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
     private ?string $pause_duration = null;
 
+    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
+    private ?Stopwatch $stopwatch = null;
+
     public function __construct()
     {
         $this->team = new ArrayCollection();
@@ -322,6 +325,28 @@ class Activity
     public function setPauseDuration(?string $pause_duration): static
     {
         $this->pause_duration = $pause_duration;
+
+        return $this;
+    }
+
+    public function getStopwatch(): ?Stopwatch
+    {
+        return $this->stopwatch;
+    }
+
+    public function setStopwatch(?Stopwatch $stopwatch): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($stopwatch === null && $this->stopwatch !== null) {
+            $this->stopwatch->setActivity(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($stopwatch !== null && $stopwatch->getActivity() !== $this) {
+            $stopwatch->setActivity($this);
+        }
+
+        $this->stopwatch = $stopwatch;
 
         return $this;
     }
