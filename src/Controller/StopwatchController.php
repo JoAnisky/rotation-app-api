@@ -129,5 +129,19 @@ class StopwatchController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/counter', name: 'counter_stopwatch', methods: ['PUT'])]
+    public function counter(Stopwatch $stopwatch, EntityManagerInterface $em): JsonResponse
+    {
+         // Décrémenter la durée d'une seconde
+         $currentDuration = $stopwatch->getDuration();
+         $stopwatch->setDuration($currentDuration - 1000);
+ 
+         // Sauvegarder les modifications dans la base de données
+         $em->persist($stopwatch);
+         $em->flush();
+ 
+         // Retourner la réponse
+         return new JsonResponse(['success' => true, 'newDuration' => $stopwatch->getDuration()], Response::HTTP_OK);
+    }
 
 }
