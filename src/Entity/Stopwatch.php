@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\StopwatchRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StopwatchRepository::class)]
 class Stopwatch
@@ -12,12 +13,15 @@ class Stopwatch
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getStopwatch"])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    #[Groups(["getStopwatch"])]
     private ?string $duration = null;
 
     #[ORM\OneToOne(inversedBy: 'stopwatch', cascade: ['persist', 'remove'])]
+    #[Groups(["getStopwatch"])]
     private ?Activity $activity = null;
 
     public function getId(): ?int
