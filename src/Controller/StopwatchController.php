@@ -129,19 +129,50 @@ class StopwatchController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    #[Route('/{id}/counter', name: 'counter_stopwatch', methods: ['PUT'])]
-    public function counter(Stopwatch $stopwatch, EntityManagerInterface $em): JsonResponse
+    // Done with Alain
+    // #[Route('/{id}/counter', name: 'counter_stopwatch', methods: ['PUT'])]
+    // public function counter(Stopwatch $stopwatch, EntityManagerInterface $em): JsonResponse
+    // {
+    //      // Décrémenter la durée d'une seconde
+    //      $currentDuration = $stopwatch->getDuration();
+    //      $stopwatch->setDuration($currentDuration - 1000);
+ 
+    //      // Sauvegarder les modifications dans la base de données
+    //      $em->persist($stopwatch);
+    //      $em->flush();
+ 
+    //      // Retourner la réponse
+    //      return new JsonResponse(['success' => true, 'newDuration' => $stopwatch->getDuration()], Response::HTTP_OK);
+    // }
+
+    #[Route('/{id}/counter/{isActive}', name: 'counter_stopwatch', methods: ['PUT'])]
+    public function counter(Stopwatch $stopwatch, EntityManagerInterface $em, bool $isActive = false): JsonResponse
     {
-         // Décrémenter la durée d'une seconde
-         $currentDuration = $stopwatch->getDuration();
-         $stopwatch->setDuration($currentDuration - 1000);
- 
-         // Sauvegarder les modifications dans la base de données
-         $em->persist($stopwatch);
-         $em->flush();
- 
-         // Retourner la réponse
-         return new JsonResponse(['success' => true, 'newDuration' => $stopwatch->getDuration()], Response::HTTP_OK);
+        // Get duration
+        $duration = $stopwatch->getDuration();
+
+        // Set counter (optional, depends on your logic)
+        $stopwatch->setCounter($duration); 
+
+        $em->persist($stopwatch);
+        $em->flush();
+        $counter = $stopwatch->getCounter(); // Get initial counter value
+
+        if ($isActive && $counter >= 0) {
+            // Calculate end time for the counter based on duration
+            $endTime = microtime(true) + $duration / 1000;
+
+            // Loop until counter reaches 0 or end time is exceeded
+            while ($counter >= 0 && microtime(true) < $endTime) {
+                // No need to persist within the loop (update later)
+                $stopwatch->setCounter($counter - 1000); // Update counter after loop
+                $em->persist($stopwatch);
+                $em->flush();
+                usleep(1000000);
+            }
+
+        }
+        return new JsonResponse(['success' => true, 'newDuration' => $stopwatch->getDuration()], Response::HTTP_OK);
     }
 
 }
