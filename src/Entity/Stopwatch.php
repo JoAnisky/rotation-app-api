@@ -25,6 +25,7 @@ class Stopwatch
     private ?Activity $activity = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    #[Groups(["getStopwatch"])]
     private ?string $counter = null;
 
     public function getId(): ?int
