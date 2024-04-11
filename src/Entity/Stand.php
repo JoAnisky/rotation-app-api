@@ -13,11 +13,11 @@ class Stand
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getStands"])]
+    #[Groups(["getStands", "getActivity"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getStands"])]
+    #[Groups(["getStands", "getActivity"])]
     #[Assert\NotBlank(message: "Le champ nom est obligatoire")]
     #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $name = null;

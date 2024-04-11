@@ -17,7 +17,7 @@ class Team
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getTeams"])]
+    #[Groups(["getTeams", "getActivity"])]
     #[Assert\NotBlank(message: "Le champ nom est obligatoire")]
     #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
     private ?string $name = null;
