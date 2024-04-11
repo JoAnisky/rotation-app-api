@@ -160,6 +160,6 @@ class StopwatchController extends AbstractController
             $em->persist($stopwatch);
             $em->flush();
         }
-        return new JsonResponse(['success' => true, 'counter' => $counter], Response::HTTP_OK);
+        return new JsonResponse(['success' => true], Response::HTTP_OK);
     }
 }
