@@ -153,7 +153,6 @@ class StandController extends AbstractController
                 return new JsonResponse(['error' => 'Activity not found'], Response::HTTP_NOT_FOUND);
             }
             // Set found Activity to the team
-            $currentStand->setActivity($activity);
         }
 
         // check if there is an Animator to update and if it exists
@@ -170,8 +169,7 @@ class StandController extends AbstractController
                 $em->persist($existingStand);
                 $em->flush();
             }
-            // Set found Animator to the stand
-            $currentStand->setAnimator($animator);
+
         }
 
         // Deserialization and Update Stand without Activity and Animator
