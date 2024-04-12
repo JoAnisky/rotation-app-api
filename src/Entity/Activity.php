@@ -93,6 +93,9 @@ class Activity
     #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
     private ?Stopwatch $stopwatch = null;
 
+    #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
+    private ?Scenario $scenario = null;
+
     public function __construct()
     {
         $this->team = new ArrayCollection();
@@ -347,6 +350,28 @@ class Activity
         }
 
         $this->stopwatch = $stopwatch;
+
+        return $this;
+    }
+
+    public function getScenario(): ?Scenario
+    {
+        return $this->scenario;
+    }
+
+    public function setScenario(?Scenario $scenario): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($scenario === null && $this->scenario !== null) {
+            $this->scenario->setActivity(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($scenario !== null && $scenario->getActivity() !== $this) {
+            $scenario->setActivity($this);
+        }
+
+        $this->scenario = $scenario;
 
         return $this;
     }
