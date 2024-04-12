@@ -13,32 +13,18 @@ class Stand
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getStands", "getActivity"])]
+    #[Groups(["getStands"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getStands", "getActivity"])]
     #[Assert\NotBlank(message: "Le champ nom est obligatoire")]
-    #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]
+    #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]   #[Groups(["getStands"])]
     private ?string $name = null;
 
     #[ORM\Column]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["getStands"])]
     private bool $is_competitive = false;
-
-    #[ORM\OneToOne(inversedBy: 'stand', cascade: ['persist', 'remove'])]
-    #[Groups(["getStands"])]
-    private ?Animator $animator = null;
-
-    #[ORM\ManyToOne(inversedBy: 'stand', cascade: ['persist'])]
-    #[ORM\JoinColumn(name:'activity_id', referencedColumnName:'id', onDelete:'SET NULL')]
-    #[Groups(["getStands"])]
-    private ?Activity $activity = null;
-
-    #[ORM\ManyToOne(inversedBy: 'stands')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -76,39 +62,4 @@ class Stand
         return $this;
     }
 
-    public function getAnimator(): ?Animator
-    {
-        return $this->animator;
-    }
-
-    public function setAnimator(?Animator $animator): static
-    {
-        $this->animator = $animator;
-
-        return $this;
-    }
-
-    public function getActivity(): ?Activity
-    {
-        return $this->activity;
-    }
-
-    public function setActivity(?Activity $activity): static
-    {
-        $this->activity = $activity;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-
-        return $this;
-    }
 }
