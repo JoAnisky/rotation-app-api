@@ -27,7 +27,7 @@ class Activity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getStands", "getAnimators", "getTeams", "getStopwatch"])]
+    #[Groups(["getActivity", "getStands", "getAnimators", "getTeams", "getStopwatch"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -62,19 +62,15 @@ class Activity
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(["getActivity"])]
-    private ?\DateTimeInterface $rotation_duration = null;
+    private ?int $rotation_duration = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(["getActivity"])]
-    private ?\DateTimeInterface $stand_duration = null;
+    private ?int $stand_duration = null;
 
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Team::class)]
     #[Groups(["getActivity"])]
     private Collection $team;
-
-    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Stand::class)]
-    #[Groups(["getActivity"])]
-    private Collection $stand;
 
     #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
@@ -96,10 +92,13 @@ class Activity
     #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
     private ?Scenario $scenario = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Groups(["getActivity"])]
+    private ?array $stands = null;
+
     public function __construct()
     {
         $this->team = new ArrayCollection();
-        $this->stand = new ArrayCollection();
         $this->status = Status::NOT_STARTED; // Default status
     }
 
@@ -254,36 +253,6 @@ class Activity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Stand>
-     */
-    public function getStand(): Collection
-    {
-        return $this->stand;
-    }
-
-    public function addStand(Stand $stand): static
-    {
-        if (!$this->stand->contains($stand)) {
-            $this->stand->add($stand);
-            $stand->setActivity($this);
-        }
-
-        return $this;
-    }
-
-    public function removeStand(Stand $stand): static
-    {
-        if ($this->stand->removeElement($stand)) {
-            // set the owning side to null (unless already changed)
-            if ($stand->getActivity() === $this) {
-                $stand->setActivity(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getUser(): ?User
     {
         return $this->user;
@@ -372,6 +341,18 @@ class Activity
         }
 
         $this->scenario = $scenario;
+
+        return $this;
+    }
+
+    public function getStands(): ?array
+    {
+        return $this->stands;
+    }
+
+    public function setStands(?array $stands): static
+    {
+        $this->stands = $stands;
 
         return $this;
     }
