@@ -91,7 +91,7 @@ class ActivityController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_activity', methods: ['POST'])]
-    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
+    //#[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Create new activity object with data provided
@@ -186,7 +186,7 @@ class ActivityController extends AbstractController
     {
         // Retrieve teams and stands from the activity ID
         $teams = $activity->getTeam()->toArray(); //  retrieves the teams 
-        $stands = $activity->getStand()->toArray(); //  retrieves the stands 
+        $stands = $activity->getStands(); //  retrieves the stands 
 
         if (empty($teams)) {
             return new JsonResponse(['message' => 'Teams not found'], Response::HTTP_BAD_REQUEST);
