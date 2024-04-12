@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Activity;
+use App\Entity\Scenario;
 use App\Repository\ActivityRepository;
 use App\Repository\StandRepository;
 use App\Repository\TeamRepository;
@@ -146,12 +147,10 @@ class ActivityController extends AbstractController
      */
     #[Route('/{id}', name: 'update_activity', methods: ['PUT'])]
     // #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
-    public function updateActivity(Request $request,  Activity $currentActivity, ActivityService $activityService, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function updateActivity(Request $request, Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
-        // // Extracting activity ID from the request content
-        // $requestData = json_decode($request->getContent(), true);
 
-        // Deserialization and Update Activity without Activity
+        // Deserialization and Update Activity
         $serializer->deserialize($request->getContent(), Activity::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentActivity]);
 
         /* The updated activity object is validated using the ValidatorInterface to ensure the data is valid.
@@ -164,13 +163,73 @@ class ActivityController extends AbstractController
         }
 
         $em->flush();
-
-        // Génération du fichier JSON avec les données de l'objet Activity mis à jour
-
-        // $jsonActivity = $serializer->serialize($currentActivity, 'json');
-
-        //$activityService->generateJson($jsonActivity);
-        // A JsonResponse with a HTTP_NO_CONTENT status code 204, indicating successful update without any content in the response body.
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /** PUT an existing activity
+     * {
+     * "name" : "new Activity name",
+     * "global_duration" : 4500
+     * "activity_id" : 27
+     * }
+     * 
+     * @param Request $request
+     * @param Activity $currentActivity
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
+    #[Route('/{id}/generate_scenario', name: 'generate_scenario', methods: ['GET'])]
+    public function generateScenarioAction(Activity $activity, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
+    {
+        // Retrieve teams and stands from the activity ID
+        $teams = $activity->getTeam()->toArray(); //  retrieves the teams 
+        $stands = $activity->getStand()->toArray(); //  retrieves the stands 
+
+        if (empty($teams)) {
+            return new JsonResponse(['message' => 'Teams not found'], Response::HTTP_BAD_REQUEST);
+        }
+        if (empty($stands)) {
+            return new JsonResponse(['message' => 'Stands not found'], Response::HTTP_BAD_REQUEST);
+        }
+        // If teams and Stand have been found, Generate scenario
+        $rotations = $this->generateScenario($teams, $stands);
+
+        // Convertir les rotations en JSON
+        $rotationsJSON = $serializer->serialize($rotations, 'json', ['groups' => 'getActivity']);
+
+        // Vérify if a scenario already exists for this Activity
+        $scenario = $em->getRepository(Scenario::class)->findOneBy(['activity' => $activity]);
+
+        if ($scenario === null) {
+            // No scenario, let's create it !
+            $scenario = new Scenario();
+            $scenario->setActivity($activity);
+        }
+
+        // Convert JSON to array
+        $rotationsArray = json_decode($rotationsJSON, true);
+        $scenario->setBaseScenario($rotationsArray);
+
+        $em->persist($scenario);
+        $em->flush($scenario);
+
+        return new JsonResponse($rotationsJSON, Response::HTTP_OK, [], true);
+    }
+
+    // Fonction pour générer le scénario
+    private function generateScenario(array $teams, array $stands): array
+    {
+        $rotations = [];
+        for ($i = 0; $i < count($stands); $i++) {
+            $rotations[$i] = [];
+            for ($j = 0; $j < count($teams); $j++) {
+                $indexStand = ($i + $j) % count($stands);
+                $rotations[$i][] = ['team' => $teams[$j], 'stand' => $stands[$indexStand]];
+            }
+        }
+        return $rotations;
     }
 }
