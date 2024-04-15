@@ -68,10 +68,6 @@ class Activity
     #[Groups(["getActivity"])]
     private ?int $stand_duration = null;
 
-    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Team::class)]
-    #[Groups(["getActivity"])]
-    private Collection $team;
-
     #[ORM\ManyToOne(inversedBy: 'activity')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
@@ -96,9 +92,12 @@ class Activity
     #[Groups(["getActivity"])]
     private ?array $stands = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Groups(["getActivity"])]
+    private ?array $teams = null;
+
     public function __construct()
     {
-        $this->team = new ArrayCollection();
         $this->status = Status::NOT_STARTED; // Default status
     }
 
@@ -223,36 +222,6 @@ class Activity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Team>
-     */
-    public function getTeam(): Collection
-    {
-        return $this->team;
-    }
-
-    public function addTeam(Team $team): static
-    {
-        if (!$this->team->contains($team)) {
-            $this->team->add($team);
-            $team->setActivity($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTeam(Team $team): static
-    {
-        if ($this->team->removeElement($team)) {
-            // set the owning side to null (unless already changed)
-            if ($team->getActivity() === $this) {
-                $team->setActivity(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getUser(): ?User
     {
         return $this->user;
@@ -353,6 +322,18 @@ class Activity
     public function setStands(?array $stands): static
     {
         $this->stands = $stands;
+
+        return $this;
+    }
+
+    public function getTeams(): ?array
+    {
+        return $this->teams;
+    }
+
+    public function setTeams(?array $teams): static
+    {
+        $this->teams = $teams;
 
         return $this;
     }

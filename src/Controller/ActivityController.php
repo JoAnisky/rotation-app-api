@@ -185,7 +185,7 @@ class ActivityController extends AbstractController
     public function generateScenarioAction(Activity $activity, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         // Retrieve teams and stands from the activity ID
-        $teams = $activity->getTeam()->toArray(); //  retrieves the teams 
+        $teams = $activity->getTeams(); //  retrieves the teams 
         $stands = $activity->getStands(); //  retrieves the stands 
 
         if (empty($teams)) {
