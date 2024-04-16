@@ -21,28 +21,39 @@ class ActivityRepository extends ServiceEntityRepository
         parent::__construct($registry, Activity::class);
     }
 
-//    /**
-//     * @return Activity[] Returns an array of Activity objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @return array Returns an array of competitive stand details from JSON field
+     */
+    public function findCompetitiveStands(int $activityId): array
+    {
+        $activity = $this->find($activityId);
+        if (!$activity) {
+            return [];
+        }
 
-//    public function findOneBySomeField($value): ?Activity
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        // Get stands data, which might be null or an array
+        $stands = $activity->getStands();
+
+        // Check if stands is null or an empty array
+        if (empty($stands)) {
+            return [];
+        }
+
+        // Filter stands to return only those that are competitive
+        $competitiveStands = array_filter($stands, function ($stand) {
+            return isset($stand['isCompetitive']) && $stand['isCompetitive'] === true;
+        });
+
+        return $competitiveStands;
+    }
+
+    //    public function findOneBySomeField($value): ?Activity
+    //    {
+    //        return $this->createQueryBuilder('a')
+    //            ->andWhere('a.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }
