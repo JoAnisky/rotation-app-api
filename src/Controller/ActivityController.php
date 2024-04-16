@@ -182,11 +182,15 @@ class ActivityController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/{id}/generate_scenario', name: 'generate_scenario', methods: ['GET'])]
-    public function generateScenarioAction(Activity $activity, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
+    public function generateScenarioAction(Activity $activity, ActivityRepository $activityRepository, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         // Retrieve teams and stands from the activity ID
         $teams = $activity->getTeams(); //  retrieves the teams 
         $stands = $activity->getStands(); //  retrieves the stands 
+
+        $activityId = $activity->getId();
+        $battleStands = $activityRepository->findCompetitiveStands($activityId);
+
 
         if (empty($teams)) {
             return new JsonResponse(['message' => 'Teams not found'], Response::HTTP_BAD_REQUEST);
@@ -195,7 +199,7 @@ class ActivityController extends AbstractController
             return new JsonResponse(['message' => 'Stands not found'], Response::HTTP_BAD_REQUEST);
         }
         // If teams and Stand have been found, Generate scenario
-        $rotations = $this->generateScenario($teams, $stands);
+        $rotations = $this->generateRotations($teams, $stands, $battleStands);
 
         // Convertir les rotations en JSON
         $rotationsJSON = $serializer->serialize($rotations, 'json', ['groups' => 'getActivity']);
@@ -219,17 +223,96 @@ class ActivityController extends AbstractController
         return new JsonResponse($rotationsJSON, Response::HTTP_OK, [], true);
     }
 
-    // Fonction pour générer le scénario
-    private function generateScenario(array $teams, array $stands): array
+    private function generateRotations(array $teams, array $stands): array 
     {
-        $rotations = [];
-        for ($i = 0; $i < count($stands); $i++) {
-            $rotations[$i] = [];
-            for ($j = 0; $j < count($teams); $j++) {
-                $indexStand = ($i + $j) % count($stands);
-                $rotations[$i][] = ['team' => $teams[$j], 'stand' => $stands[$indexStand]];
-            }
-        }
-        return $rotations;
+    $rotations = [];
+    $teamIds = array_column($teams, 'id');
+    $standIds = array_column($stands, 'id');
+
+    $teamMap = array_combine($teamIds, $teams);
+    $standMap = array_combine($standIds, $stands);
+
+    $numTeams = count($teams);
+    $numStands = count($stands);
+
+    // Array to keep track of the current stand index for each team
+    $currentStandIndices = array_fill(0, $numTeams, 0);
+
+    // Initial assignment of teams to stands
+    for ($i = 0; $i < $numTeams; $i++) {
+        $currentStandIndices[$i] = $i % $numStands;
     }
+
+    // Perform rotations for each turn
+    for ($turnNumber = 0; $turnNumber < $numStands; $turnNumber++) {
+        $currentRound = [];
+
+        for ($i = 0; $i < $numTeams; $i++) {
+            if ($teamIds[$i] % 2 == 0) {
+                // Team ID is even, move to the next stand
+                $currentStandIndices[$i] = ($currentStandIndices[$i] + 1) % $numStands;
+            } else {
+                // Team ID is odd, move to the previous stand
+                $currentStandIndices[$i] = ($currentStandIndices[$i] - 1 + $numStands) % $numStands;
+            }
+            $currentStandId = $standIds[$currentStandIndices[$i]];
+            $currentRound[$standMap[$currentStandId]['name']][] = $teamMap[$teamIds[$i]];
+        }
+
+        // Format the output for this round
+        $rotations[] = $currentRound;
+    }
+
+    return $rotations;
+}
+
+    
+    // private function generateRotations(array $teams, array $stands, array $battleStands): array
+    // {
+    //     $rotations = [];
+    //     $teamIds = array_column($teams, 'id');
+    //     $standIds = array_column($stands, 'id');
+    //     $compStandIds = array_column($battleStands, 'id');
+    
+    //     $teamMap = array_combine($teamIds, $teams);
+    //     $standMap = array_combine($standIds, $stands);
+    
+    //     $numTeams = count($teams);
+    //     $numStands = count($stands);
+    //     $numRounds = $numTeams;  // Every team meets every other team
+    
+    //     // Generate a schedule for each round
+    //     for ($round = 0; $round < $numRounds; $round++) {
+    //         $currentRound = [];
+    
+    //         // Create pairs for this round
+    //         for ($i = 0; $i < $numTeams / 2; $i++) {
+    //             $home = ($round + $i) % $numTeams;
+    //             $away = ($numTeams - 1 - $i + $round) % $numTeams;
+    //             if ($i == 0 && ($round % 2 == 1)) {  // Swap to balance home/away
+    //                 $temp = $home;
+    //                 $home = $away;
+    //                 $away = $temp;
+    //             }
+    
+    //             $standId = $standIds[$i % $numStands];
+    //             if (in_array($standId, $compStandIds)) {
+    //                 $currentRound[$standId] = [$teamMap[$teamIds[$home]], $teamMap[$teamIds[$away]]];
+    //             } else {
+    //                 $currentRound[$standId] = [$teamMap[$teamIds[$home]]];
+    //             }
+    //         }
+    
+    //         // Format the output for this round
+    //         $formattedRound = [];
+    //         foreach ($currentRound as $standId => $teamsAtStand) {
+    //             $standName = $standMap[$standId]['name'];
+    //             $formattedRound[$standName] = $teamsAtStand;
+    //         }
+    //         $rotations[] = $formattedRound;
+    //     }
+    
+    //     return $rotations;
+    // }    
+    
 }
