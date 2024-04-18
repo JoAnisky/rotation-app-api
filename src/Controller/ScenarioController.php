@@ -25,12 +25,25 @@ class ScenarioController extends AbstractController
     }
 
     #[Route('/{id}', name: 'detail_scenario', methods: ['GET'])]
-    public function getDetailScenario(int $id, ScenarioRepository $scenarioRepository, SerializerInterface $serializer): JsonResponse
+    public function getDetailScenario(int $id, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
+        $scenarioRepository = $em->getRepository(Scenario::class);  // Assuming Scenario is your entity class
         $scenario = $scenarioRepository->findScenarioByActivityId($id);
-        // If no scenario ParamConverter will throw an Exception
-        // Turn $scenario object into JSON format
-        $jsonScenario = $serializer->serialize($scenario, 'json', ['groups' => 'getScenario']);
+
+        if (!$scenario) {
+            // If no scenario found, return a JSON response with an error message
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Pas de scénario trouvé'
+            ], Response::HTTP_NOT_FOUND);  // Using HTTP 404 Not Found status
+        }
+
+        // Serialize the scenario object into JSON format
+        $jsonScenario = $serializer->serialize($scenario, 'json', [
+            'groups' => 'getScenario'
+        ]);
+
+        // Return a successful JSON response with the serialized scenario
         return new JsonResponse($jsonScenario, Response::HTTP_OK, [], true);
     }
 
@@ -56,21 +69,28 @@ class ScenarioController extends AbstractController
         $battleStands = $activityRepository->findCompetitiveStands($activityId);
 
         if (empty($teams)) {
-            return new JsonResponse(['message' => 'Teams not found'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => 'Pas d\'équipes trouvées'], Response::HTTP_BAD_REQUEST);
         }
         if (empty($stands)) {
-            return new JsonResponse(['message' => 'Stands not found'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => 'Pas de stands trouvés'], Response::HTTP_BAD_REQUEST);
         }
         // If teams and Stand have been found, Generate scenario
-        $rotations = $this->generateRotations($teams, $stands, $battleStands);
+        $rotationResult = $this->generateRotations($teams, $stands, $battleStands);
 
+        if (!$rotationResult['success']) {
+            return new JsonResponse([
+                'success' => $rotationResult['success'],
+                'message' => 'Impossible de générer le scénario',
+                'details' => $rotationResult['details']
+            ], Response::HTTP_BAD_REQUEST);
+        }
         // Convertir les rotations en JSON
-        $rotationsJSON = $serializer->serialize($rotations, 'json', ['groups' => 'getActivity']);
+        $rotationsJSON = $serializer->serialize($rotationResult, 'json', ['groups' => 'getActivity']);
 
         // Vérify if a scenario already exists for this Activity
         $scenario = $em->getRepository(Scenario::class)->findOneBy(['activity' => $activity]);
 
-        if ($scenario === null) {
+        if (!$scenario) {
             // No scenario, let's create it !
             $scenario = new Scenario();
             $scenario->setActivity($activity);
@@ -83,11 +103,18 @@ class ScenarioController extends AbstractController
         $em->persist($scenario);
         $em->flush($scenario);
 
-        return new JsonResponse($rotationsJSON, Response::HTTP_OK, [], true);
+        // If success, do something with $rotationResult['data']
+        // For example, returning a successful response with data
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Scenario des rotations créé',
+            'data' => $rotationResult['data']
+        ], Response::HTTP_OK);
     }
 
     private function generateRotations(array $teams, array $stands): array
     {
+        
         $rotations = [];
         $teamIds = array_column($teams, 'id');
         $standIds = array_column($stands, 'id');
@@ -98,34 +125,47 @@ class ScenarioController extends AbstractController
         $numTeams = count($teams);
         $numStands = count($stands);
 
-        // Array to keep track of the current stand index for each team
-        $currentStandIndices = array_fill(0, $numTeams, 0);
 
-        // Initial assignment of teams to stands
+        // Number of stands cant be infer to number of teams
+        if ($numStands < $numTeams) {
+            return ['success' => false, 'details' => "Le nombre de stands est inférieur au nombre d'équipes"];
+        }
+
+        // Prepare initial positions of teams on stands
+        $positions = [];
         for ($i = 0; $i < $numTeams; $i++) {
-            $currentStandIndices[$i] = $i % $numStands;
+            $positions[$teamIds[$i]] = $standIds[$i];
         }
 
         // Perform rotations for each turn
         for ($turnNumber = 0; $turnNumber < $numStands; $turnNumber++) {
             $currentRound = [];
+            $usedStands = [];
 
-            for ($i = 0; $i < $numTeams; $i++) {
-                if ($teamIds[$i] % 2 == 0) {
-                    // Team ID is even, move to the next stand
-                    $currentStandIndices[$i] = ($currentStandIndices[$i] + 1) % $numStands;
-                } else {
-                    // Team ID is odd, move to the previous stand
-                    $currentStandIndices[$i] = ($currentStandIndices[$i] - 1 + $numStands) % $numStands;
+            // Calculate new positions for each team
+            foreach ($positions as $teamId => $currentStandId) {
+                $index = array_search($currentStandId, $standIds);
+                $nextIndex = ($index + 1) % $numStands;
+                while (in_array($standIds[$nextIndex], $usedStands)) {
+                    $nextIndex = ($nextIndex + 1) % $numStands;
                 }
-                $currentStandId = $standIds[$currentStandIndices[$i]];
-                $currentRound[$standMap[$currentStandId]['name']][] = $teamMap[$teamIds[$i]];
+
+                $positions[$teamId] = $standIds[$nextIndex];
+                $usedStands[] = $standIds[$nextIndex];
+                $currentRound[$standMap[$standIds[$nextIndex]]['name']][] = $teamMap[$teamId];
+            }
+
+            // Add empty stands to the current round
+            foreach ($standIds as $standId) {
+                if (!in_array($standId, $usedStands)) {
+                    $currentRound[$standMap[$standId]['name']] = [];  // No team on this stand
+                }
             }
 
             // Format the output for this round
             $rotations[] = $currentRound;
         }
 
-        return $rotations;
+        return ['success' => true, 'data' => $rotations];
     }
 }
