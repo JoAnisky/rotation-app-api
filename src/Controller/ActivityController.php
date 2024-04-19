@@ -90,7 +90,7 @@ class ActivityController extends AbstractController
      */
     #[Route('/', name: 'create_activity', methods: ['POST'])]
     //#[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
-    public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
+    public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         // Create new activity object with data provided
         $activity = $serializer->deserialize($request->getContent(), Activity::class, 'json');
@@ -119,13 +119,13 @@ class ActivityController extends AbstractController
         $em->flush();
 
         // Generate the "detail" URL for the new Activity
-        $location = $urlGenerator->generate('detail_activity', ['id' => $activity->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        //$location = $urlGenerator->generate('detail_activity', ['id' => $activity->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         // Serialize the new Activity for the response
-        $jsonActivity = $serializer->serialize($activity, 'json', ['groups' => 'getActivity']);
+        // $jsonActivity = $serializer->serialize($activity, 'json', ['groups' => 'getActivity']);
 
-        // return 201 with new Activity and details URL
-        return new JsonResponse($jsonActivity, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
+        // Return a JSON response with the ID of the newly created Activity
+        return new JsonResponse(['activity_id' => $activity->getId()], JsonResponse::HTTP_CREATED);
     }
 
     /** PUT an existing activity
@@ -163,5 +163,4 @@ class ActivityController extends AbstractController
         $em->flush();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
-
 }
