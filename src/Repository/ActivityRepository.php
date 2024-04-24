@@ -41,7 +41,7 @@ class ActivityRepository extends ServiceEntityRepository
 
         // Filter stands to return only those that are competitive
         $competitiveStands = array_filter($stands, function ($stand) {
-            return isset($stand['isCompetitive']) && $stand['isCompetitive'] === true;
+            return isset($stand['nbTeamsOnStand']) && $stand['nbTeamsOnStand'] > 1;
         });
 
         return $competitiveStands;
