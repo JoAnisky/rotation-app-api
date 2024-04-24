@@ -23,7 +23,6 @@ class Stand
 
     #[ORM\Column]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["getStands"])]
     private bool $is_competitive = false;
 
     public function getId(): ?int
