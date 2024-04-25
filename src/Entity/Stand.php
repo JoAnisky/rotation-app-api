@@ -21,9 +21,6 @@ class Stand
     #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]   #[Groups(["getStands"])]
     private ?string $name = null;
 
-    #[ORM\Column]
-    #[ORM\JoinColumn(nullable: false)]
-    private bool $is_competitive = false;
 
     public function getId(): ?int
     {
@@ -45,18 +42,6 @@ class Stand
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getIsCompetitive(): ?bool
-    {
-        return $this->is_competitive;
-    }
-
-    public function setIsCompetitive(bool $is_competitive): static
-    {
-        $this->is_competitive = $is_competitive;
 
         return $this;
     }

@@ -22,8 +22,9 @@ class Animator
     #[Groups(["getAnimators"])]
     private ?string $name = null;
 
-    #[ORM\OneToOne(mappedBy: 'animator', cascade: ['persist', 'remove'])]
-    private ?Stand $stand = null;
+    #[ORM\Column(nullable: true)]
+    #[Groups(["getAnimators"])]
+    private ?array $stands = null;
 
     #[ORM\ManyToOne(inversedBy: 'animators')]
     #[ORM\JoinColumn(nullable: false)]
@@ -53,24 +54,14 @@ class Animator
         return $this;
     }
 
-    public function getStand(): ?Stand
+    public function getStands(): ?array
     {
-        return $this->stand;
+        return $this->stands;
     }
 
-    public function setStand(?Stand $stand): static
+    public function setStands(?array $stands): static
     {
-        // unset the owning side of the relation if necessary
-        if ($stand === null && $this->stand !== null) {
-            $this->stand->setAnimator(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($stand !== null && $stand->getAnimator() !== $this) {
-            $stand->setAnimator($this);
-        }
-
-        $this->stand = $stand;
+        $this->stands = $stands;
 
         return $this;
     }
