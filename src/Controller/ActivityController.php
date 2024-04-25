@@ -39,6 +39,22 @@ class ActivityController extends AbstractController
         return new JsonResponse($jsonActivity, Response::HTTP_OK, [], true);
     }
 
+    #[Route('/{id}/stands', name: 'activity_stands', methods: ['GET'])]
+    public function getActivityStands(Activity $activity, SerializerInterface $serializer): JsonResponse {
+        // Serialization logic here
+        $stands = $activity->getStands();
+        $jsonStands = $serializer->serialize($stands, 'json');
+        return new JsonResponse($jsonStands, Response::HTTP_OK, [], true);
+    }
+
+    #[Route('/{id}/teams', name: 'activity_teams', methods: ['GET'])]
+    public function getActivityTeams(Activity $activity, SerializerInterface $serializer): JsonResponse {
+        // Serialization logic here
+        $teams = $activity->getTeams();
+        $jsonTeams = $serializer->serialize($teams, 'json');
+        return new JsonResponse($jsonTeams, Response::HTTP_OK, [], true);
+    }
+
     /**
      * @param Activity $activity
      * @param StandRepository $standRepository
