@@ -37,6 +37,7 @@ class AnimatorController extends AbstractController
         $jsonAnimator = $serializer->serialize($animator, 'json', ['groups' => 'getAnimators']);
         return new JsonResponse($jsonAnimator, Response::HTTP_OK, [], true);
     }
+
     #[Route('/{id}', name: 'delete_animator', methods: ['DELETE'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteAnimator(Animator $animator, EntityManagerInterface $em): JsonResponse
@@ -67,7 +68,7 @@ class AnimatorController extends AbstractController
     #[Route('/', name: 'create_animator', methods: ['POST'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createAnimator(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
-    {        
+    {
         // Create new Animator object with data provided
         $animator = $serializer->deserialize($request->getContent(), Animator::class, 'json');
         // Extracting user ID from the request content
@@ -82,23 +83,23 @@ class AnimatorController extends AbstractController
             // Associate found User with the new Team
             $animator->setUser($user);
         }
-    
+
         // Check if no validation error, if errors -> returns error 400
         $errors = $validator->validate($animator);
         if (count($errors) > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
-    
+
         // Persist and flush new Animator
         $em->persist($animator);
         $em->flush();
-    
+
         // Générerate URL "détails" for the new animator
         $location = $urlGenerator->generate('detail_animator', ['id' => $animator->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         // Sérialize new Animator for the the response
         $jsonAnimator = $serializer->serialize($animator, 'json', ['groups' => 'getAnimators']);
-    
+
         // return 201 with new Animator and details URL
         return new JsonResponse($jsonAnimator, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
@@ -140,5 +141,29 @@ class AnimatorController extends AbstractController
 
         // HTTP_NO_CONTENT status code 204 is returned without content
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Update the Stands list on Animator
+     */
+    #[Route('/{id}/stands', name: 'update_animator_stands', methods: ['PUT'])]
+    public function updateAnimatorStands(Request $request, Animator $animator, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        // If animator doesn't ParamConverter will throw an Exception
+        // update "stands" field with data provided by frontend
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data)) {
+            return new JsonResponse(['error' => 'Stands data is missing'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Mise à jour des stands de l'animateur
+        $animator->setStands($data);
+
+        $em->persist($animator);
+        $em->flush();
+
+        $jsonAnimator = $serializer->serialize($animator, 'json', ['groups' => 'getAnimators']);
+        return new JsonResponse($jsonAnimator, Response::HTTP_OK, [], true);
     }
 }
