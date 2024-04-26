@@ -66,7 +66,7 @@ class ScenarioController extends AbstractController
         $stands = $activity->getStands(); //  retrieves the stands 
 
         $activityId = $activity->getId();
-        $battleStands = $activityRepository->findCompetitiveStands($activityId);
+        //$battleStands = $activityRepository->findCompetitiveStands($activityId);
 
         if (empty($teams)) {
             return new JsonResponse(['message' => 'Pas d\'équipes trouvées'], Response::HTTP_BAD_REQUEST);
@@ -75,7 +75,7 @@ class ScenarioController extends AbstractController
             return new JsonResponse(['message' => 'Pas de stands trouvés'], Response::HTTP_BAD_REQUEST);
         }
         // If teams and Stand have been found, Generate scenario
-        $rotationResult = $this->generateRotations($teams, $stands, $battleStands);
+        $rotationResult = $this->generateRotations($teams, $stands);
 
         if (!$rotationResult['success']) {
             return new JsonResponse([
@@ -112,57 +112,62 @@ class ScenarioController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+
     private function generateRotations(array $teams, array $stands): array
     {
-        
         $rotations = [];
         $teamIds = array_column($teams, 'id');
+        $teamNames = array_combine($teamIds, array_column($teams, 'name'));
         $standIds = array_column($stands, 'id');
+        $standNames = array_combine($standIds, array_column($stands, 'name'));
 
-        $teamMap = array_combine($teamIds, $teams);
-        $standMap = array_combine($standIds, $stands);
+        //  Initialize team capacities and positions
+        $initialPositions = [];
+        $standCapacities = array_fill_keys($standIds, 0); // Array to keep track of the number of teams per stand
 
-        $numTeams = count($teams);
-        $numStands = count($stands);
-
-
-        // Number of stands cant be infer to number of teams
-        if ($numStands < $numTeams) {
-            return ['success' => false, 'details' => "Le nombre de stands est inférieur au nombre d'équipes"];
+        // Assign teams to pits initially while respecting capacity
+        foreach ($teamIds as $teamId) {
+            foreach ($stands as $stand) {
+                if ($standCapacities[$stand['id']] < $stand['nbTeamsOnStand']) {
+                    $initialPositions[$teamId] = $stand['id'];
+                    $standCapacities[$stand['id']]++;
+                    break;
+                }
+            }
         }
 
-        // Prepare initial positions of teams on stands
-        $positions = [];
-        for ($i = 0; $i < $numTeams; $i++) {
-            $positions[$teamIds[$i]] = $standIds[$i];
-        }
-
-        // Perform rotations for each turn
-        for ($turnNumber = 0; $turnNumber < $numStands; $turnNumber++) {
+        // Rotation for each turn
+        for ($turnNumber = 0; $turnNumber < count($stands); $turnNumber++) {
             $currentRound = [];
-            $usedStands = [];
+            $newPositions = [];
+            $usedCapacities = array_fill_keys($standIds, 0); // Reset capacities for the new round
 
-            // Calculate new positions for each team
-            foreach ($positions as $teamId => $currentStandId) {
-                $index = array_search($currentStandId, $standIds);
-                $nextIndex = ($index + 1) % $numStands;
-                while (in_array($standIds[$nextIndex], $usedStands)) {
-                    $nextIndex = ($nextIndex + 1) % $numStands;
+            // Rotate each team according to their pair or odd status
+            foreach ($initialPositions as $teamId => $standId) {
+                $currentStandIndex = array_search($standId, $standIds);
+                $moveUp = ($teamId % 2 == 0);
+
+                if ($moveUp) {
+                    $nextStandIndex = ($currentStandIndex + 1) % count($standIds);
+                } else {
+                    $nextStandIndex = ($currentStandIndex - 1 + count($standIds)) % count($standIds);
                 }
 
-                $positions[$teamId] = $standIds[$nextIndex];
-                $usedStands[] = $standIds[$nextIndex];
-                $currentRound[$standMap[$standIds[$nextIndex]]['name']][] = $teamMap[$teamId];
-            }
-
-            // Add empty stands to the current round
-            foreach ($standIds as $standId) {
-                if (!in_array($standId, $usedStands)) {
-                    $currentRound[$standMap[$standId]['name']] = [];  // No team on this stand
+                // Check for capacity constraints before placing the team
+                while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']) {
+                    if ($moveUp) {
+                        $nextStandIndex = ($nextStandIndex + 1) % count($standIds);
+                    } else {
+                        $nextStandIndex = ($nextStandIndex - 1 + count($standIds)) % count($standIds);
+                    }
                 }
+
+                $newPositions[$teamId] = $standIds[$nextStandIndex];
+                $usedCapacities[$standIds[$nextStandIndex]]++;
+                $currentRound[$standNames[$standIds[$nextStandIndex]]][] = $teamNames[$teamId];
             }
 
-            // Format the output for this round
+            $initialPositions = $newPositions; // Update positions for the next round
             $rotations[] = $currentRound;
         }
 
