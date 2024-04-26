@@ -85,7 +85,7 @@ class ScenarioController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
         // Convertir les rotations en JSON
-        $rotationsJSON = $serializer->serialize($rotationResult, 'json', ['groups' => 'getActivity']);
+        $rotationsJSON = $serializer->serialize($rotationResult["data"], 'json', ['groups' => 'getActivity']);
 
         // Vérify if a scenario already exists for this Activity
         $scenario = $em->getRepository(Scenario::class)->findOneBy(['activity' => $activity]);
