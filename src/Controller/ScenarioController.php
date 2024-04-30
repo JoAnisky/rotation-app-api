@@ -12,6 +12,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/scenario')]
 class ScenarioController extends AbstractController
@@ -45,6 +48,40 @@ class ScenarioController extends AbstractController
 
         // Return a successful JSON response with the serialized scenario
         return new JsonResponse($jsonScenario, Response::HTTP_OK, [], true);
+    }
+
+    /** PUT an existing scenario
+     * {
+     * "scenario_id" : 27
+     * }
+     * 
+     * @param Request $request
+     * @param Scenario $currentScenario
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
+    #[Route('/{id}', name: 'update_scenario', methods: ['PUT'])]
+    // #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
+    public function updateScenario(Request $request, Scenario $currentScenario, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    {
+
+        // Deserialization and Update Scenario
+        $serializer->deserialize($request->getContent(), Scenario::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentScenario]);
+
+        /* The updated scenario object is validated using the ValidatorInterface to ensure the data is valid.
+        *  If any errors are found, a JSON response with the errors is returned with a HTTP_BAD_REQUEST status*/
+        $errors = $validator->validate($currentScenario);
+
+        if ($errors->count() > 0) {
+            // Srialize data
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $em->flush();
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     /** 
