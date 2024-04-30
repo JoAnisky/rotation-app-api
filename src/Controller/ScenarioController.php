@@ -173,6 +173,12 @@ class ScenarioController extends AbstractController
             }
         }
 
+        // Pour que ça marche il faut que soit tout compete soit tout solo,
+        // Nombre d'équipes inférieur ou egal au nombre de slots
+
+        // Pour le cas tous les stands compétititfs : le nombre de slots doit etre nbSlots % equipe = 0 sinon pas possible
+        // Nb de manches = nb de slots divisé par nombre d'equipes
+
         // Rotation for each turn
         for ($turnNumber = 0; $turnNumber < count($stands); $turnNumber++) {
             $currentRound = [];
