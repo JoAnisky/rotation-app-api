@@ -158,6 +158,40 @@ class ScenarioController extends AbstractController
         $standIds = array_column($stands, 'id');
         $standNames = array_combine($standIds, array_column($stands, 'name'));
 
+        // Initialization of the variable for cumulative stand capacities
+        $nbSlots = 0;
+        $nbSlotsCompetitive = 0;
+        // Used to compare stand capacity
+        $firstStandCapacity = $stands[0]['nbTeamsOnStand'];
+        // Search for competitive stands (nbTeamsOnStand > 1)
+        $competitiveStands = [];
+
+        // Everything has to be either compete or solo,
+        foreach ($stands as $stand) {
+            $currentStandCapacity = $stand['nbTeamsOnStand'];
+            if ($currentStandCapacity > 1) {
+                $competitiveStands[] = $stand;
+                $nbSlotsCompetitive += $currentStandCapacity;
+            }
+            $nbSlots += $currentStandCapacity;  // Add nbSlots based on nbTeamsOnStand for each stand
+
+            if ($currentStandCapacity !== $firstStandCapacity) {
+                return ['success' => false, 'details' => "Tous les stands doivent accueillir le même nombre d'équipes (capacité)."];
+            }
+        }
+
+        $teamCount = count($teamIds);
+
+        // Check whether the total number of competitive slots is divisible by the number of teams
+        if ($nbSlotsCompetitive % $teamCount !== 0) {
+            return ['success' => false, 'details' => "Le nombre total de slots compétitifs doit être divisible par le nombre d'équipes."];
+        }
+
+        // Number of teams less than or equal to number of slots
+        if ($teamCount > $nbSlots) {
+            return ['success' => false, 'details' => "Le nombre d'équipes doit être inférieur ou egal au nombre total d'emplacements des stands"];
+        }
+
         //  Initialize team capacities and positions
         $initialPositions = [];
         $standCapacities = array_fill_keys($standIds, 0); // Array to keep track of the number of teams per stand
@@ -173,10 +207,6 @@ class ScenarioController extends AbstractController
             }
         }
 
-        // Pour que ça marche il faut que soit tout compete soit tout solo,
-        // Nombre d'équipes inférieur ou egal au nombre de slots
-
-        // Pour le cas tous les stands compétititfs : le nombre de slots doit etre nbSlots % equipe = 0 sinon pas possible
         // Nb de manches = nb de slots divisé par nombre d'equipes
 
         // Rotation for each turn
