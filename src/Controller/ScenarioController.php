@@ -207,42 +207,52 @@ class ScenarioController extends AbstractController
             }
         }
 
-        // Nb de manches = nb de slots divisé par nombre d'equipes
+        // Calcul du nombre total de manches nécessaire
+        $nbRounds = ceil(count($stands) / $teamCount);
 
-        // Rotation for each turn
-        for ($turnNumber = 0; $turnNumber < count($stands); $turnNumber++) {
-            $currentRound = [];
-            $newPositions = [];
-            $usedCapacities = array_fill_keys($standIds, 0); // Reset capacities for the new round
+        // Rotation pour chaque manche
+        for($round = 0; $round < $nbRounds; $round ++){
 
-            // Rotate each team according to their pair or odd status
-            foreach ($initialPositions as $teamId => $standId) {
-                $currentStandIndex = array_search($standId, $standIds);
-                $moveUp = ($teamId % 2 == 0);
-
-                if ($moveUp) {
-                    $nextStandIndex = ($currentStandIndex + 1) % count($standIds);
-                } else {
-                    $nextStandIndex = ($currentStandIndex - 1 + count($standIds)) % count($standIds);
-                }
-
-                // Check for capacity constraints before placing the team
-                while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']) {
-                    if ($moveUp) {
-                        $nextStandIndex = ($nextStandIndex + 1) % count($standIds);
-                    } else {
-                        $nextStandIndex = ($nextStandIndex - 1 + count($standIds)) % count($standIds);
+            $endStandIndex = ($teamCount / 2);
+            for ($turnNumber = 0; $turnNumber < count($standIds); $turnNumber++) {
+                $currentRound = [];
+                $newPositions = [];
+                $usedCapacities = array_fill_keys($standIds, 0); // Réinitialisation des capacités pour le nouveau tour
+ 
+                // Rotation de chaque équipe en fonction de son statut pair ou impair
+                foreach ($initialPositions as $teamId => $standId) {
+                    $standIndex = array_search($standId, $standIds); // Récupération de l'index du stand actuel
+    
+                    // Vérifier si le stand actuel est dans la plage de stands pour ce tour
+                    if ($standIndex < $endStandIndex) {
+                        $stand = $stands[$standIndex];
+                        $moveUp = ($teamId % 2 == 0);
+    
+                        $nextStandIndex = $standIndex;
+                        // Avancer ou reculer à l'index suivant en fonction du statut pair ou impair de l'équipe
+                        do {
+                            if ($moveUp) {
+                                $nextStandIndex = ($nextStandIndex + 1) % count($standIds);
+                            } else {
+                                $nextStandIndex = ($nextStandIndex - 1 + count($standIds)) % count($standIds);
+                            }
+    
+                            // Vérifier si le stand suivant respecte les capacités avant de placer l'équipe
+                        } while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']);
+    
+                        // Placez l'équipe sur le stand approprié et mettez à jour les informations
+                        $newPositions[$teamId] = $standIds[$nextStandIndex];
+                        $usedCapacities[$standIds[$nextStandIndex]]++;
+                        $currentRound[$standNames[$standIds[$nextStandIndex]]][] = $teamNames[$teamId];
                     }
                 }
-
-                $newPositions[$teamId] = $standIds[$nextStandIndex];
-                $usedCapacities[$standIds[$nextStandIndex]]++;
-                $currentRound[$standNames[$standIds[$nextStandIndex]]][] = $teamNames[$teamId];
+    
+                // Mettre à jour les positions pour le prochain tour
+                $initialPositions = $newPositions;
+                $rotations[] = $currentRound;
             }
-
-            $initialPositions = $newPositions; // Update positions for the next round
-            $rotations[] = $currentRound;
         }
+        
 
         return ['success' => true, 'data' => $rotations];
     }
