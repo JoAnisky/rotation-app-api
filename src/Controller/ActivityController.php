@@ -7,6 +7,7 @@ use App\Repository\ActivityRepository;
 use App\Repository\StandRepository;
 use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
+use App\Service\CodeGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +41,8 @@ class ActivityController extends AbstractController
     }
 
     #[Route('/{id}/stands', name: 'activity_stands', methods: ['GET'])]
-    public function getActivityStands(Activity $activity, SerializerInterface $serializer): JsonResponse {
+    public function getActivityStands(Activity $activity, SerializerInterface $serializer): JsonResponse
+    {
         // Serialization logic here
         $stands = $activity->getStands();
         $jsonStands = $serializer->serialize($stands, 'json');
@@ -48,7 +50,8 @@ class ActivityController extends AbstractController
     }
 
     #[Route('/{id}/teams', name: 'activity_teams', methods: ['GET'])]
-    public function getActivityTeams(Activity $activity, SerializerInterface $serializer): JsonResponse {
+    public function getActivityTeams(Activity $activity, SerializerInterface $serializer): JsonResponse
+    {
         // Serialization logic here
         $teams = $activity->getTeams();
         $jsonTeams = $serializer->serialize($teams, 'json');
@@ -106,7 +109,7 @@ class ActivityController extends AbstractController
      */
     #[Route('/', name: 'create_activity', methods: ['POST'])]
     //#[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
-    public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, CodeGeneratorService $codeGenerator): JsonResponse
     {
         // Create new activity object with data provided
         $activity = $serializer->deserialize($request->getContent(), Activity::class, 'json');
@@ -123,6 +126,12 @@ class ActivityController extends AbstractController
             // Associate found User with the new Activity
             $activity->setUser($user);
         }
+
+        // Générer les codes pour les participants et les animateurs
+        $participantCode = $codeGenerator->generateUniqueCode('participant_code');
+        $animatorCode = $codeGenerator->generateUniqueCode('animator_code');
+        $activity->setParticipantCode($participantCode);
+        $activity->setAnimatorCode($animatorCode);
 
         // Validate the Activity entity before flush
         $errors = $validator->validate($activity);
