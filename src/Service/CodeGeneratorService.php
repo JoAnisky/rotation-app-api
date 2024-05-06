@@ -24,8 +24,7 @@ class CodeGeneratorService
 
     private function isCodeExists(string $code, string $type): bool
     {
-        // Supposons que vous avez une méthode dans votre repository pour vérifier l'existence du code
-        // Vous devez implémenter cette méthode dans votre ActivityRepository
+        // Check if code exists (see ActivityRepository)
         return $this->activityRepository->codeExists($code, $type);
     }
 }
