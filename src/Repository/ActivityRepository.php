@@ -21,39 +21,15 @@ class ActivityRepository extends ServiceEntityRepository
         parent::__construct($registry, Activity::class);
     }
 
-    /**
-     * @return array Returns an array of competitive stand details from JSON field
-     */
-    public function findCompetitiveStands(int $activityId): array
+    public function codeExists(string $code, string $type): bool
     {
-        $activity = $this->find($activityId);
-        if (!$activity) {
-            return [];
-        }
+        $qb = $this->createQueryBuilder('a');
+        $qb->select('count(a.id)')
+            ->where("a.$type = :code")
+            ->setParameter('code', $code);
 
-        // Get stands data, which might be null or an array
-        $stands = $activity->getStands();
+        $count = $qb->getQuery()->getSingleScalarResult();
 
-        // Check if stands is null or an empty array
-        if (empty($stands)) {
-            return [];
-        }
-
-        // Filter stands to return only those that are competitive
-        $competitiveStands = array_filter($stands, function ($stand) {
-            return isset($stand['nbTeamsOnStand']) && $stand['nbTeamsOnStand'] > 1;
-        });
-
-        return $competitiveStands;
+        return $count > 0;
     }
-
-    //    public function findOneBySomeField($value): ?Activity
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
