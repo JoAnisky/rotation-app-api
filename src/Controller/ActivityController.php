@@ -59,6 +59,29 @@ class ActivityController extends AbstractController
     }
 
     /**
+     * Gets an activity by pin code
+     * 
+     * @param string $pincode Code to check
+     * @param SerializerInterface $serializer
+     * @param ActivityRepository $activityRepository
+     */
+    #[Route('/code/{pincode}', name: 'activity_pincode', methods: ['GET'])]
+    public function getActivityByPinCode(string $pincode, SerializerInterface $serializer, ActivityRepository $activityRepository): JsonResponse
+    {
+        $result = $activityRepository->findByPinCode($pincode);
+        if (!$result) {
+            return new JsonResponse(['message' => 'Activité non trouvée'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $data = $serializer->serialize([
+            'activity_id' => $result['activity']->getId(),
+            'code_type' => $result['codeType']
+        ], 'json');
+
+        return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
+    }
+
+    /**
      * @param Activity $activity
      * @param StandRepository $standRepository
      * @param TeamRepository $teamRepository
