@@ -96,14 +96,11 @@ class ScenarioController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/{id}/generate', name: 'generate_scenario', methods: ['GET'])]
-    public function generateScenarioAction(Activity $activity, ActivityRepository $activityRepository, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
+    public function generateScenarioAction(Activity $activity, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         // Retrieve teams and stands from the activity ID
         $teams = $activity->getTeams(); //  retrieves the teams 
         $stands = $activity->getStands(); //  retrieves the stands 
-
-        $activityId = $activity->getId();
-        //$battleStands = $activityRepository->findCompetitiveStands($activityId);
 
         if (empty($teams)) {
             return new JsonResponse(['message' => 'Pas d\'équipes trouvées'], Response::HTTP_BAD_REQUEST);
@@ -149,7 +146,13 @@ class ScenarioController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-
+    /**
+     * Performs rotations and returns a scenario array with teams and stands for each turn
+     * 
+     * @param array $teams - Array of teams
+     * @param array $stands - Array of stands
+     * @return array
+     */
     private function generateRotations(array $teams, array $stands): array
     {
         $rotations = [];
@@ -169,15 +172,16 @@ class ScenarioController extends AbstractController
         // Everything has to be either compete or solo,
         foreach ($stands as $stand) {
             $currentStandCapacity = $stand['nbTeamsOnStand'];
+            if ($currentStandCapacity !== $firstStandCapacity) {
+                return ['success' => false, 'details' => "Tous les stands doivent accueillir le même nombre d'équipes (capacité)."];
+            }
+
             if ($currentStandCapacity > 1) {
                 $competitiveStands[] = $stand;
                 $nbSlotsCompetitive += $currentStandCapacity;
             }
             $nbSlots += $currentStandCapacity;  // Add nbSlots based on nbTeamsOnStand for each stand
 
-            if ($currentStandCapacity !== $firstStandCapacity) {
-                return ['success' => false, 'details' => "Tous les stands doivent accueillir le même nombre d'équipes (capacité)."];
-            }
         }
 
         $teamCount = count($teamIds);
@@ -211,23 +215,23 @@ class ScenarioController extends AbstractController
         $nbRounds = ceil(count($stands) / $teamCount);
 
         // Rotation pour chaque manche
-        for($round = 0; $round < $nbRounds; $round ++){
+        for ($round = 0; $round < $nbRounds; $round++) {
 
             $endStandIndex = ($teamCount / 2);
             for ($turnNumber = 0; $turnNumber < count($standIds); $turnNumber++) {
                 $currentRound = [];
                 $newPositions = [];
                 $usedCapacities = array_fill_keys($standIds, 0); // Réinitialisation des capacités pour le nouveau tour
- 
+
                 // Rotation de chaque équipe en fonction de son statut pair ou impair
                 foreach ($initialPositions as $teamId => $standId) {
                     $standIndex = array_search($standId, $standIds); // Récupération de l'index du stand actuel
-    
+
                     // Vérifier si le stand actuel est dans la plage de stands pour ce tour
                     if ($standIndex < $endStandIndex) {
                         $stand = $stands[$standIndex];
                         $moveUp = ($teamId % 2 == 0);
-    
+
                         $nextStandIndex = $standIndex;
                         // Avancer ou reculer à l'index suivant en fonction du statut pair ou impair de l'équipe
                         do {
@@ -236,23 +240,22 @@ class ScenarioController extends AbstractController
                             } else {
                                 $nextStandIndex = ($nextStandIndex - 1 + count($standIds)) % count($standIds);
                             }
-    
+
                             // Vérifier si le stand suivant respecte les capacités avant de placer l'équipe
                         } while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']);
-    
+
                         // Placez l'équipe sur le stand approprié et mettez à jour les informations
                         $newPositions[$teamId] = $standIds[$nextStandIndex];
                         $usedCapacities[$standIds[$nextStandIndex]]++;
                         $currentRound[$standNames[$standIds[$nextStandIndex]]][] = $teamNames[$teamId];
                     }
                 }
-    
+
                 // Mettre à jour les positions pour le prochain tour
                 $initialPositions = $newPositions;
                 $rotations[] = $currentRound;
             }
         }
-        
 
         return ['success' => true, 'data' => $rotations];
     }
