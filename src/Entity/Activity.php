@@ -5,9 +5,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ActivityRepository;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -47,10 +45,6 @@ class Activity
     #[ORM\Column(type: 'string', enumType: Status::class)]
     #[Groups(["getActivity"])]
     private Status $status = Status::NOT_STARTED;
-
-    #[ORM\Column(nullable: true)]
-    #[Groups(["getActivity"])]
-    private ?int $nb_participants = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
@@ -95,6 +89,14 @@ class Activity
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
     private ?array $teams = null;
+
+    #[ORM\Column(length:6)]
+    #[Groups(["getActivity"])]
+    private string $participantCode;
+
+    #[ORM\Column(length:6)]
+    #[Groups(["getActivity"])]
+    private string $animatorCode;
 
     public function __construct()
     {
@@ -158,18 +160,6 @@ class Activity
     public function setStatus(Status $status): self
     {
         $this->status = $status;
-
-        return $this;
-    }
-
-    public function getNbParticipants(): ?int
-    {
-        return $this->nb_participants;
-    }
-
-    public function setNbParticipants(?int $nb_participants): static
-    {
-        $this->nb_participants = $nb_participants;
 
         return $this;
     }
@@ -335,6 +325,28 @@ class Activity
     {
         $this->teams = $teams;
 
+        return $this;
+    }
+
+    public function getParticipantCode() : ?string
+    {
+        return $this->participantCode;
+    }
+
+    public function setParticipantCode(string $participantCode): self
+    {
+        $this->participantCode = $participantCode;
+        return $this;
+    }
+
+    public function getAnimatorCode() : ?string
+    {
+        return $this->animatorCode;
+    }
+
+    public function setAnimatorCode(string $animatorCode): self
+    {
+        $this->animatorCode = $animatorCode;
         return $this;
     }
 
