@@ -128,8 +128,8 @@ class ActivityController extends AbstractController
         }
 
         // Générer les codes pour les participants et les animateurs
-        $participantCode = $codeGenerator->generateUniqueCode('participant_code');
-        $animatorCode = $codeGenerator->generateUniqueCode('animator_code');
+        $participantCode = $codeGenerator->generateUniqueCode('participantCode');
+        $animatorCode = $codeGenerator->generateUniqueCode('animatorCode');
         $activity->setParticipantCode($participantCode);
         $activity->setAnimatorCode($animatorCode);
 
