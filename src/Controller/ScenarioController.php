@@ -226,34 +226,35 @@ class ScenarioController extends AbstractController
                 // Rotation de chaque équipe en fonction de son statut pair ou impair
                 foreach ($initialPositions as $teamId => $standId) {
                     $standIndex = array_search($standId, $standIds); // Récupération de l'index du stand actuel
-
-                    // Vérifier si le stand actuel est dans la plage de stands pour ce tour
                     if ($standIndex < $endStandIndex) {
-                        $stand = $stands[$standIndex];
                         $moveUp = ($teamId % 2 == 0);
-
                         $nextStandIndex = $standIndex;
-                        // Avancer ou reculer à l'index suivant en fonction du statut pair ou impair de l'équipe
                         do {
-                            if ($moveUp) {
-                                $nextStandIndex = ($nextStandIndex + 1) % count($standIds);
-                            } else {
-                                $nextStandIndex = ($nextStandIndex - 1 + count($standIds)) % count($standIds);
-                            }
-
-                            // Vérifier si le stand suivant respecte les capacités avant de placer l'équipe
+                            $nextStandIndex = $moveUp ? ($nextStandIndex + 1) % count($standIds) : ($nextStandIndex - 1 + count($standIds)) % count($standIds);
                         } while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']);
 
-                        // Placez l'équipe sur le stand approprié et mettez à jour les informations
                         $newPositions[$teamId] = $standIds[$nextStandIndex];
                         $usedCapacities[$standIds[$nextStandIndex]]++;
-                        $currentRound[$standNames[$standIds[$nextStandIndex]]][] = $teamNames[$teamId];
+                        $currentRound[$standIds[$nextStandIndex]]['standName'] = $standNames[$standIds[$nextStandIndex]];
+                        $currentRound[$standIds[$nextStandIndex]]['teams'][] = [
+                            'teamName' => $teamNames[$teamId],
+                            'teamId' => $teamId
+                        ];
                     }
                 }
 
-                // Mettre à jour les positions pour le prochain tour
+                // Transformer currentRound pour grouper par standId
+                $formattedRound = [];
+                foreach ($currentRound as $standId => $standInfo) {
+                    $formattedRound[] = [
+                        'standId' => $standId,
+                        'standName' => $standInfo['standName'],
+                        'teams' => $standInfo['teams']
+                    ];
+                }
+
                 $initialPositions = $newPositions;
-                $rotations[] = $currentRound;
+                $rotations[] = $formattedRound;
             }
         }
 
