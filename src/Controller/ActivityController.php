@@ -60,22 +60,37 @@ class ActivityController extends AbstractController
 
     /**
      * Gets an activity by pin code
-     * 
+     * @param string $routePrefix API endpoint for role
      * @param string $pincode Code to check
      * @param SerializerInterface $serializer
      * @param ActivityRepository $activityRepository
+     * @return JsonResponse
      */
-    #[Route('/code/{pincode}', name: 'activity_pincode', methods: ['GET'])]
-    public function getActivityByPinCode(string $pincode, SerializerInterface $serializer, ActivityRepository $activityRepository): JsonResponse
+    #[Route(['/{routePrefix}/code/{pincode}'], name: 'activity_pincode', methods: ['GET'])]
+    public function getActivityAndRoleByPinCode(string $routePrefix, string $pincode, SerializerInterface $serializer, ActivityRepository $activityRepository): JsonResponse
     {
-        $result = $activityRepository->findByPinCode($pincode);
+
+        switch ($routePrefix) {
+            case 'participant':
+                $result = $activityRepository->findBy(['participantCode' => $pincode]);
+                $role = 'participant';
+                break;
+            case 'animator':
+                $result = $activityRepository->findBy(['animatorCode' => $pincode]);
+                $role = 'animator';
+                break;
+            default:
+                // No route match
+                return new JsonResponse(['message' => 'Route non reconnue'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         if (!$result) {
             return new JsonResponse(['message' => 'Activité non trouvée'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $data = $serializer->serialize([
-            'activity_id' => $result['activity']->getId(),
-            'code_type' => $result['codeType']
+            'activity_id' => $result[0]->getId(),
+            'role' => $role
         ], 'json');
 
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
