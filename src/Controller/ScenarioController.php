@@ -156,8 +156,8 @@ class ScenarioController extends AbstractController
     private function generateRotations(array $teams, array $stands): array
     {
         $rotations = [];
-        $teamIds = array_column($teams, 'id');
-        $teamNames = array_combine($teamIds, array_column($teams, 'name'));
+        $teamIds = array_column($teams, 'teamId');
+        $teamNames = array_combine($teamIds, array_column($teams, 'teamName'));
         $standIds = array_column($stands, 'id');
         $standNames = array_combine($standIds, array_column($stands, 'name'));
 
