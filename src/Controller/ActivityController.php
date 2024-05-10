@@ -87,10 +87,10 @@ class ActivityController extends AbstractController
         if (!$result) {
             return new JsonResponse(['message' => 'Activité non trouvée'], JsonResponse::HTTP_NOT_FOUND);
         }
-
+        $role = strtoupper($role);
         $data = $serializer->serialize([
             'activity_id' => $result[0]->getId(),
-            'role' => $role
+            'role' => 'ROLE_'.$role
         ], 'json');
 
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
