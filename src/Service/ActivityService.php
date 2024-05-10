@@ -34,23 +34,4 @@ class ActivityService
         }
         $this->entityManager->flush();
     }
-
-    public function generateJson($jsonData): Response
-    {
-        dd($jsonData);
-        // $data = [
-        //     'name' => 'John Doe',
-        //     'age' => 30,
-        //     'email' => 'john@example.com'
-        // ];
-
-        $response = new Response($jsonData);
-
-        // Enregistrement du contenu JSON dans un fichier
-        $filePath = $this->projectDir . '/public/scenarios/activity.json'; // Chemin où vous souhaitez enregistrer le fichier JSON
-        file_put_contents($filePath, $jsonData);
-
-        // Réponse de confirmation
-        return new Response('Fichier JSON généré avec succès');
-    }
 }
