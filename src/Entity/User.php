@@ -42,9 +42,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Team::class)]
     private Collection $teams;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Stand::class)]
-    private Collection $stands;
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Activity::class)]
     #[Groups(["getActivity"])]
     private Collection $activities;
@@ -53,7 +50,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->animators = new ArrayCollection();
         $this->teams = new ArrayCollection();
-        $this->stands = new ArrayCollection();
         $this->activities = new ArrayCollection();
     }
 
@@ -168,36 +164,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($team->getUser() === $this) {
                 $team->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Stand>
-     */
-    public function getStands(): Collection
-    {
-        return $this->stands;
-    }
-
-    public function addStand(Stand $stand): static
-    {
-        if (!$this->stands->contains($stand)) {
-            $this->stands->add($stand);
-            $stand->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeStand(Stand $stand): static
-    {
-        if ($this->stands->removeElement($stand)) {
-            // set the owning side to null (unless already changed)
-            if ($stand->getUser() === $this) {
-                $stand->setUser(null);
             }
         }
 
