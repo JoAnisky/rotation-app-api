@@ -4,31 +4,28 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Json;
 
 class ApiLoginController extends AbstractController
 {
-    #[Route('/login', name: 'login', methods: ['POST'])]
-    public function index(#[CurrentUser] ?User $user): Response
+    #[Route('/api/login', name: 'app_login')]
+    public function login(TokenStorageInterface $tokenStorage): JsonResponse
     {
-       
-        if (null === $user) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
+        $token = $tokenStorage->getToken();
+
+        if(!$token){
+            return new JsonResponse(['message' => 'token manquant'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        // $token = ...; // somehow create an API token for $user
+        /** @var User $user */
+        $user = $token->getUser();
 
         return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/ApiLoginController.php',
-            'user'  => $user->getUserIdentifier(),
-            'user_id' => $user->getId()
-            //'token' => $token,
+            'username' => $user->getLogin(),
+            'user_id' => $user->getId(),
         ]);
     }
 }
