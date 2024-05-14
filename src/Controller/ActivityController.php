@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Annotation\Secure;
 use App\Entity\Activity;
 use App\Repository\ActivityRepository;
 use App\Repository\StandRepository;
@@ -23,6 +24,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/activity')]
 class ActivityController extends AbstractController
 {
+
     #[Route('/', name: 'activity', methods: ['GET'])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
@@ -90,7 +92,7 @@ class ActivityController extends AbstractController
         $role = strtoupper($role);
         $data = $serializer->serialize([
             'activity_id' => $result[0]->getId(),
-            'role' => 'ROLE_'.$role
+            'role' => 'ROLE_' . $role
         ], 'json');
 
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
@@ -101,9 +103,9 @@ class ActivityController extends AbstractController
      * @param StandRepository $standRepository
      * @param TeamRepository $teamRepository
      * @param EntityManagerInterface $em
+     *  @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
-    // #[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits pour accèder à cette section')]
     #[Route('/{id}', name: 'delete_activity', methods: ['DELETE'])]
     #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
     public function deleteActivity(Activity $activity, EntityManagerInterface $em): JsonResponse
@@ -141,14 +143,15 @@ class ActivityController extends AbstractController
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
-     * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @param CodeGeneratorService $codeGenerator
+     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/', name: 'create_activity', methods: ['POST'])]
-    //#[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de création')]
     public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, CodeGeneratorService $codeGenerator): JsonResponse
     {
+
         // Create new activity object with data provided
         $activity = $serializer->deserialize($request->getContent(), Activity::class, 'json');
 
@@ -181,12 +184,6 @@ class ActivityController extends AbstractController
         $em->persist($activity);
         $em->flush();
 
-        // Generate the "detail" URL for the new Activity
-        //$location = $urlGenerator->generate('detail_activity', ['id' => $activity->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        // Serialize the new Activity for the response
-        // $jsonActivity = $serializer->serialize($activity, 'json', ['groups' => 'getActivity']);
-
         // Return a JSON response with the ID of the newly created Activity
         return new JsonResponse(['activity_id' => $activity->getId()], JsonResponse::HTTP_CREATED);
     }
@@ -204,10 +201,10 @@ class ActivityController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_activity', methods: ['PUT'])]
-    // #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de modification')]
     public function updateActivity(Request $request, Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 
