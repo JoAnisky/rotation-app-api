@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
+use App\Annotation\Secure;
 use App\Entity\Activity;
 use App\Entity\Scenario;
-use App\Repository\ActivityRepository;
 use App\Repository\ScenarioRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -61,6 +61,7 @@ class ScenarioController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_scenario', methods: ['PUT'])]
@@ -93,6 +94,7 @@ class ScenarioController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/{id}/generate', name: 'generate_scenario', methods: ['GET'])]
