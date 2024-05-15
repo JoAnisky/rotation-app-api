@@ -26,6 +26,7 @@ class ActivityController extends AbstractController
 {
 
     #[Route('/', name: 'activity', methods: ['GET'])]
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
         $activitiesList = $activityRepository->findAll();
@@ -103,11 +104,10 @@ class ActivityController extends AbstractController
      * @param StandRepository $standRepository
      * @param TeamRepository $teamRepository
      * @param EntityManagerInterface $em
-     *  @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
-    #[Route('/{id}', name: 'delete_activity', methods: ['DELETE'])]
-    #[IsGranted('ROLE_GAMEMASTER', message: 'Vous n\'avez pas les droits de suppression')]
+    #[Route('/delete/{id}', name: 'delete_activity', methods: ['DELETE'])]
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function deleteActivity(Activity $activity, EntityManagerInterface $em): JsonResponse
     {
         $em->getConnection()->beginTransaction(); // Start transaction
@@ -145,10 +145,10 @@ class ActivityController extends AbstractController
      * @param EntityManagerInterface $em
      * @param ValidatorInterface $validator
      * @param CodeGeneratorService $codeGenerator
-     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/', name: 'create_activity', methods: ['POST'])]
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function createActivity(Request $request, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, CodeGeneratorService $codeGenerator): JsonResponse
     {
 
@@ -201,10 +201,10 @@ class ActivityController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
-     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_activity', methods: ['PUT'])]
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function updateActivity(Request $request, Activity $currentActivity, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
 

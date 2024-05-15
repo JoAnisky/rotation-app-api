@@ -61,7 +61,6 @@ class ScenarioController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
-     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
     #[Route('/{id}', name: 'update_scenario', methods: ['PUT'])]
@@ -94,9 +93,9 @@ class ScenarioController extends AbstractController
      * @param EntityManagerInterface $em
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
-     * @Secure(roles={"ROLE_ADMIN", "ROLE_GAMEMASTER"})
      * @return JsonResponse
      */
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     #[Route('/{id}/generate', name: 'generate_scenario', methods: ['GET'])]
     public function generateScenarioAction(Activity $activity, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
