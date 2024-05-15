@@ -18,7 +18,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/activity')]
@@ -26,7 +25,7 @@ class ActivityController extends AbstractController
 {
 
     #[Route('/', name: 'activity', methods: ['GET'])]
-    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
+    //TODO : #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
         $activitiesList = $activityRepository->findAll();
