@@ -19,14 +19,13 @@ class JWTAuthenticatorService
     public function authenticate(Request $request, array $requiredRoles = ['ROLE_ADMIN', 'ROLE_GAMEMASTER'])
     {
         $cookies = $request->cookies;
-
         if ($cookies->has('authToken')) {
             $cookieToken = $cookies->get('authToken');
 
             try {
                 $payload = $this->jwtEncoder->decode($cookieToken);
 
-                // Vérifiez les rôles ou autres informations du payload
+                // Verifiy userRoles stored in payload
                 $userRoles = $payload['roles'];
                 foreach ($requiredRoles as $role) {
                     if (in_array($role, $userRoles)) {
@@ -34,12 +33,12 @@ class JWTAuthenticatorService
                     }
                 }
 
-                throw new AccessDeniedException('Access denied for this user role.');
+                throw new AccessDeniedException('Accès non autorisé pour ce role.');
             } catch (\Exception $e) {
-                throw new AuthenticationException('Depuis le JWT Service : Invalid token.');
+                throw new AuthenticationException('Token invalide.');
             }
         } else {
-            throw new AuthenticationException('No authToken found in cookies.');
+            throw new AuthenticationException('Erreur : vous devez être authentifié');
         }
     }
 }
