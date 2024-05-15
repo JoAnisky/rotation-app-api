@@ -2,18 +2,15 @@
 
 namespace App\Annotation;
 
-use Doctrine\Common\Annotations\Annotation\Target;
+use Attribute;
 
-/**
- * @Annotation
- * @Target({"CLASS", "METHOD"})
- */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 class Secure
 {
-    public $roles;
+    public array $roles;
 
-    public function __construct(array $data)
+    public function __construct(array $roles)
     {
-        $this->roles = $data['roles'];
+        $this->roles = $roles;
     }
 }
