@@ -25,15 +25,6 @@ class ApiLoginController extends AbstractController
 
         $jwt = substr($jwt, 7); // Supprimer "Bearer " pour obtenir le token JWT
 
-
-        // Create a cookie
-        $cookie = Cookie::create('authToken')
-            ->withValue($jwt)
-            ->withExpires(time() + (7 * 24 * 60 * 60)) // 7 days
-            ->withSecure(true)
-            ->withHttpOnly(false) // If true, we cant get it in frontend
-            ->withSameSite('strict');
-
         /** @var User $user */
         $user = $token->getUser();
 
@@ -42,8 +33,6 @@ class ApiLoginController extends AbstractController
             'user_id' => $user->getId(),
             'role' => $user->getRoles(),
         ]);
-
-        $response->headers->setCookie($cookie);
 
         return $response;
     }
