@@ -1,23 +1,20 @@
 <?php
-
 namespace App\EventListener;
 
 use App\Annotation\Secure;
 use App\Service\JWTAuthenticatorService;
-use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
+use ReflectionClass;
+use ReflectionMethod;
 
-class SecurityListener
+class SecurityListener 
 {
-    private $reader;
     private $jwtAuthenticator;
 
-    public function __construct(Reader $reader, JWTAuthenticatorService $jwtAuthenticator)
+    public function __construct(JWTAuthenticatorService $jwtAuthenticator)
     {
-        $this->reader = $reader;
         $this->jwtAuthenticator = $jwtAuthenticator;
     }
 
@@ -30,12 +27,10 @@ class SecurityListener
             return;
         }
 
-        // Vérifiez l'annotation sur la méthode
-        $method = new \ReflectionMethod($controller[0], $controller[1]);
-        $class = new \ReflectionClass($controller[0]);
+        $method = new ReflectionMethod($controller[0], $controller[1]);
+        $class = new ReflectionClass($controller[0]);
 
-        $annotation = $this->reader->getMethodAnnotation($method, Secure::class) ??
-                      $this->reader->getClassAnnotation($class, Secure::class);
+        $annotation = $this->getSecureAnnotation($method) ?? $this->getSecureAnnotation($class);
 
         if ($annotation) {
             try {
@@ -47,4 +42,14 @@ class SecurityListener
             }
         }
     }
+
+    private function getSecureAnnotation($reflection)
+    {
+        $attributes = $reflection->getAttributes(Secure::class);
+        if (count($attributes) > 0) {
+            return $attributes[0]->newInstance();
+        }
+        return null;
+    }
 }
+
