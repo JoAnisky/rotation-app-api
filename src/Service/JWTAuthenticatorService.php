@@ -18,27 +18,30 @@ class JWTAuthenticatorService
 
     public function authenticate(Request $request, array $requiredRoles = ['ROLE_ADMIN', 'ROLE_GAMEMASTER'])
     {
-        $cookies = $request->cookies;
-        if ($cookies->has('authToken')) {
-            $cookieToken = $cookies->get('authToken');
-
-            try {
-                $payload = $this->jwtEncoder->decode($cookieToken);
-
-                // Verifiy userRoles stored in payload
-                $userRoles = $payload['roles'];
-                foreach ($requiredRoles as $role) {
-                    if (in_array($role, $userRoles)) {
-                        return;
-                    }
+        // Récupérer le token JWT de l'en-tête Authorization
+        $authorizationHeader = $request->headers->get('Authorization');
+    
+        if (!$authorizationHeader || !str_starts_with($authorizationHeader, 'Bearer ')) {
+            throw new AuthenticationException('Token manquant ou invalide');
+        }
+    
+        // Supprimer "Bearer " pour obtenir le token JWT
+        $jwt = substr($authorizationHeader, 7);
+    
+        try {
+            $payload = $this->jwtEncoder->decode($jwt);
+    
+            // Vérifier les rôles de l'utilisateur stockés dans le payload
+            $userRoles = $payload['roles'];
+            foreach ($requiredRoles as $role) {
+                if (in_array($role, $userRoles)) {
+                    return;
                 }
-
-                throw new AccessDeniedException('Accès non autorisé pour ce role.');
-            } catch (\Exception $e) {
-                throw new AuthenticationException('Token invalide.');
             }
-        } else {
-            throw new AuthenticationException('Erreur : vous devez être authentifié');
+    
+            throw new AccessDeniedException('Accès non autorisé pour ce rôle.');
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Token invalide.');
         }
     }
 }
