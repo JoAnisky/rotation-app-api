@@ -24,6 +24,7 @@ class Stand
 
     #[ORM\Column(type: Types::SMALLINT)]
     #[Assert\Range(min: 1, max: 50, notInRangeMessage: "Le nombre d'équipes doit être entre 1 et 50.")]
+    #[Groups(["getStands"])]
     private ?int $nbTeamsOnStand = 1;
 
     public function getId(): ?int
