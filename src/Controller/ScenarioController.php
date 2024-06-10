@@ -186,7 +186,8 @@ class ScenarioController extends AbstractController
         }
 
         $teamCount = count($teamIds);
-
+        $standCount = count($standIds);
+        // dd('nbSlots' . $nbSlots . 'team count'. $teamCount);
         // Check whether the total number of competitive slots is divisible by the number of teams
         if ($nbSlotsCompetitive % $teamCount !== 0) {
             return ['success' => false, 'details' => "Le nombre total de slots compétitifs doit être divisible par le nombre d'équipes."];
@@ -212,52 +213,50 @@ class ScenarioController extends AbstractController
             }
         }
 
-        // Calcul du nombre total de manches nécessaire
-        $nbRounds = ceil(count($stands) / $teamCount);
+        // Count number of rounds
+        $nbRounds = $nbSlots / $teamCount;
 
-        // Rotation pour chaque manche
-        for ($round = 0; $round < $nbRounds; $round++) {
+        // Rotation for each rounds
+        for ($round = 0; $round < $teamCount; $round++) {
+            $currentRound = [];
 
-            $endStandIndex = ($teamCount / 2);
-            for ($turnNumber = 0; $turnNumber < count($standIds); $turnNumber++) {
-                $currentRound = [];
-                $newPositions = [];
-                $usedCapacities = array_fill_keys($standIds, 0); // Réinitialisation des capacités pour le nouveau tour
+            foreach ($stands as $stand) {
+                $standId = $stand['id'];
+                $teamsInStand = [];
 
-                // Rotation de chaque équipe en fonction de son statut pair ou impair
-                foreach ($initialPositions as $teamId => $standId) {
-                    $standIndex = array_search($standId, $standIds); // Récupération de l'index du stand actuel
-                    if ($standIndex < $endStandIndex) {
-                        $moveUp = ($teamId % 2 == 0);
-                        $nextStandIndex = $standIndex;
-                        do {
-                            $nextStandIndex = $moveUp ? ($nextStandIndex + 1) % count($standIds) : ($nextStandIndex - 1 + count($standIds)) % count($standIds);
-                        } while ($usedCapacities[$standIds[$nextStandIndex]] >= $stands[$nextStandIndex]['nbTeamsOnStand']);
-
-                        $newPositions[$teamId] = $standIds[$nextStandIndex];
-                        $usedCapacities[$standIds[$nextStandIndex]]++;
-                        $currentRound[$standIds[$nextStandIndex]]['standName'] = $standNames[$standIds[$nextStandIndex]];
-                        $currentRound[$standIds[$nextStandIndex]]['teams'][] = [
+                foreach ($initialPositions as $teamId => $currentStandId) {
+                    if ($currentStandId === $standId) {
+                        $teamsInStand[] = [
                             'teamName' => $teamNames[$teamId],
                             'teamId' => $teamId
                         ];
                     }
                 }
 
-                // Transformer currentRound pour grouper par standId
-                $formattedRound = [];
-                foreach ($currentRound as $standId => $standInfo) {
-                    $formattedRound[] = [
-                        'standId' => $standId,
-                        'standName' => $standInfo['standName'],
-                        'teams' => $standInfo['teams']
-                    ];
-                }
-
-                $initialPositions = $newPositions;
-                $rotations[] = $formattedRound;
+                $currentRound[] = [
+                    'standId' => $standId,
+                    'standName' => $standNames[$standId],
+                    'teams' => $teamsInStand
+                ];
             }
+
+            $newPositions = [];
+            foreach ($initialPositions as $teamId => $standId) {
+                $standIndex = array_search($standId, $standIds);
+                $moveUp = ($teamId % 2 == 0);
+                $nextStandIndex = $moveUp
+                    ? ($standIndex + 1) % count($standIds)
+                    : ($standIndex - 1 + count($standIds)) % count($standIds);
+
+                $newPositions[$teamId] = $standIds[$nextStandIndex];
+            }
+
+            $initialPositions = $newPositions;
+            $rotations[] = $currentRound;
         }
+
+        //dd($nbRounds);
+        //dd("FIN DES BOUCLES - roundStartStandIndex : " . $roundStartStandIndex . " - roundEndStandIndex : " . $roundEndStandIndex . " - roundStandCount : " . $roundStandCount);
 
         return ['success' => true, 'data' => $rotations];
     }
