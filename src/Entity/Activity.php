@@ -9,14 +9,6 @@ use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-enum Status: string
-{
-    case NOT_STARTED = 'NOT_STARTED';
-    case ROTATING = 'ROTATING';
-    case IN_PROGRESS = 'IN_PROGRESS';
-    case PAUSED = 'PAUSED';
-    case COMPLETED = 'COMPLETED';
-}
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[HasLifecycleCallbacks]
@@ -41,10 +33,6 @@ class Activity
     #[ORM\Column]
     #[Groups(["getActivity"])]
     private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\Column(type: 'string', enumType: Status::class)]
-    #[Groups(["getActivity"])]
-    private Status $status = Status::NOT_STARTED;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["getActivity"])]
@@ -90,18 +78,13 @@ class Activity
     #[Groups(["getActivity"])]
     private ?array $teams = null;
 
-    #[ORM\Column(length:6)]
+    #[ORM\Column(length: 6)]
     #[Groups(["getActivity"])]
     private string $participantCode;
 
-    #[ORM\Column(length:6)]
+    #[ORM\Column(length: 6)]
     #[Groups(["getActivity"])]
     private string $animatorCode;
-
-    public function __construct()
-    {
-        $this->status = Status::NOT_STARTED; // Default status
-    }
 
     public function getId(): ?int
     {
@@ -150,18 +133,6 @@ class Activity
         if ($this->createdAt === null) {
             $this->createdAt = new \DateTimeImmutable();
         }
-    }
-
-    public function getStatus(): Status
-    {
-        return $this->status;
-    }
-
-    public function setStatus(Status $status): self
-    {
-        $this->status = $status;
-
-        return $this;
     }
 
     public function getNbTeams(): ?int
@@ -328,7 +299,7 @@ class Activity
         return $this;
     }
 
-    public function getParticipantCode() : ?string
+    public function getParticipantCode(): ?string
     {
         return $this->participantCode;
     }
@@ -339,7 +310,7 @@ class Activity
         return $this;
     }
 
-    public function getAnimatorCode() : ?string
+    public function getAnimatorCode(): ?string
     {
         return $this->animatorCode;
     }
@@ -349,5 +320,4 @@ class Activity
         $this->animatorCode = $animatorCode;
         return $this;
     }
-
 }

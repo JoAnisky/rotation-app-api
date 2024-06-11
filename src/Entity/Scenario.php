@@ -6,6 +6,15 @@ use App\Repository\ScenarioRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+enum Status: string
+{
+    case NOT_STARTED = 'NOT_STARTED';
+    case ROTATING = 'ROTATING';
+    case IN_PROGRESS = 'IN_PROGRESS';
+    case PAUSED = 'PAUSED';
+    case COMPLETED = 'COMPLETED';
+}
+
 #[ORM\Entity(repositoryClass: ScenarioRepository::class)]
 class Scenario
 {
@@ -26,6 +35,15 @@ class Scenario
     #[ORM\OneToOne(inversedBy: 'scenario', cascade: ['persist', 'remove'])]
     #[Groups(["getScenario"])]
     private ?Activity $activity = null;
+
+    #[ORM\Column(type: 'string', enumType: Status::class)]
+    #[Groups(["getScenario"])]
+    private Status $status = Status::NOT_STARTED;
+
+    public function __construct()
+    {
+        $this->status = Status::NOT_STARTED; // Default status
+    }
 
     public function getId(): ?int
     {
@@ -64,6 +82,18 @@ class Scenario
     public function setActivity(?Activity $activity): static
     {
         $this->activity = $activity;
+
+        return $this;
+    }
+
+    public function getStatus(): Status
+    {
+        return $this->status;
+    }
+
+    public function setStatus(Status $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }
