@@ -217,7 +217,7 @@ class ScenarioController extends AbstractController
         $nbRounds = $nbSlots / $teamCount;
 
         // Rotation for each rounds
-        for ($round = 0; $round < $teamCount; $round++) {
+        for ($round = 0; $round < $standCount; $round++) {
             $currentRound = [];
 
             foreach ($stands as $stand) {
