@@ -215,7 +215,10 @@ class ScenarioController extends AbstractController
 
         // Count number of rounds
         $nbRounds = $nbSlots / $teamCount;
-
+        // if ($nbRounds > 1) {
+        //     $stands = ($teamCount / 2) - 1;
+        //     dd("il va falloir faire des manches ! stands : ", $stands);
+        // }
         // Rotation for each rounds
         for ($round = 0; $round < $standCount; $round++) {
             $currentRound = [];
