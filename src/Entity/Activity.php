@@ -54,16 +54,6 @@ class Activity
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    #[Groups(["getActivity"])]
-    private ?string $activity_start_time = null;
-
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    private ?string $pause_start_time = null;
-
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    private ?string $pause_duration = null;
-
     #[ORM\OneToOne(mappedBy: 'activity', cascade: ['persist', 'remove'])]
     private ?Stopwatch $stopwatch = null;
 
@@ -191,42 +181,6 @@ class Activity
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getActivityStartTime(): ?string
-    {
-        return $this->activity_start_time;
-    }
-
-    public function setActivityStartTime(?string $activity_start_time): static
-    {
-        $this->activity_start_time = $activity_start_time;
-
-        return $this;
-    }
-
-    public function getPauseStartTime(): ?string
-    {
-        return $this->pause_start_time;
-    }
-
-    public function setPauseStartTime(?string $pause_start_time): static
-    {
-        $this->pause_start_time = $pause_start_time;
-
-        return $this;
-    }
-
-    public function getPauseDuration(): ?string
-    {
-        return $this->pause_duration;
-    }
-
-    public function setPauseDuration(?string $pause_duration): static
-    {
-        $this->pause_duration = $pause_duration;
 
         return $this;
     }
