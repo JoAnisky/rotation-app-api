@@ -1,7 +1,10 @@
+SERVER := "olivierb@toto.o2switch.net"
+DOMAIN := "api.youturn.10torsions.com"
+
 .PHONY: install deploy
 
 deploy:
- 	ssh -i ~/.ssh/id_rsa olivierb@toto.o2switch.net 'cd api.youturn.com && git pull origin main && make install'
+	ssh -A $(SERVER) 'cd $(DOMAIN) && git pull origin main && make install'
 
 install: vendor/autoload.php
 	php bin/console doctrine:migrations:migrate -n
