@@ -7,3 +7,12 @@ nelmio_cors:
     expose_headers: ["Link"]
     allow_credentials: true
     max_age: 3600
+  paths:
+    "^/": # Applique les règles CORS à tous les chemins
+      origin_regex: true
+      allow_origin: ["%env(CORS_ALLOW_ORIGIN)%"]
+      allow_methods: ["GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+      allow_headers: ["x-xsrf-token", "Content-Type", "Authorization"]
+      expose_headers: ["Link"]
+      allow_credentials: true
+      max_age: 3600
