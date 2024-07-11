@@ -119,8 +119,8 @@ final class AddUserCommand  extends Command
         $roles = [User::ROLE_USER];
         if ($isAdmin) {
             $roles[] = User::ROLE_ADMIN;
-        }
-        if ($isGamemaster) {
+            $roles[] = User::ROLE_GAMEMASTER;
+        } elseif ($isGamemaster) {
             $roles[] = User::ROLE_GAMEMASTER;
         }
         $user->setRoles($roles);
