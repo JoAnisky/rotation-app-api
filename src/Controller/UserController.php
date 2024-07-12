@@ -103,7 +103,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'create_user', methods: ['POST'])]
-    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse 
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         // Deserialize $request->getcontent
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -167,6 +167,17 @@ class UserController extends AbstractController
         $errors = $validator->validate($updatedUser);
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        // Check if a new password has been provided
+        $newPassword = $updatedUser->getPassword();
+        if (!empty($newPassword)) {
+            // Encode the new password
+            $encodedPassword = $this->userPasswordHasher->hashPassword($updatedUser, $newPassword);
+            $updatedUser->setPassword($encodedPassword);
+        } else {
+            // If no new password provided, keep the current password
+            $updatedUser->setPassword($currentUser->getPassword());
         }
 
         // The updated user object is persisted to the database using EntityManagerInterface
