@@ -22,10 +22,10 @@ class Stand
     #[Assert\Length(min: 2, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne doit pas faire plus de {{ limit }} caractères ")]   #[Groups(["getStands"])]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::SMALLINT)]
-    #[Assert\Range(min: 1, max: 50, notInRangeMessage: "Le nombre d'équipes doit être entre 1 et 50.")]
+    #[ORM\Column(type: Types::SMALLINT, options: ["default" => 2])]
+    #[Assert\Range(min: 2, max: 50, notInRangeMessage: "Le nombre d'équipes doit être entre 2 et 50.")]
     #[Groups(["getStands"])]
-    private ?int $nbTeamsOnStand = 1;
+    private ?int $nbTeamsOnStand = 2;
 
     public function getId(): ?int
     {
