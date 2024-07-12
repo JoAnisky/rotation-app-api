@@ -116,13 +116,14 @@ final class AddUserCommand  extends Command
         $user = new User();
         $user->setLogin($username);
 
-        $roles = [User::ROLE_USER];
         if ($isAdmin) {
             $roles[] = User::ROLE_ADMIN;
-            $roles[] = User::ROLE_GAMEMASTER;
         } elseif ($isGamemaster) {
             $roles[] = User::ROLE_GAMEMASTER;
+        } else {
+            $roles = [User::ROLE_USER];
         }
+
         $user->setRoles($roles);
 
         $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
