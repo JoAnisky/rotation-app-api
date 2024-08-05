@@ -46,13 +46,6 @@ class AppFixtures extends Fixture
             ->setRoles(['ROLE_GAMEMASTER'])
             ->setPassword($this->userPasswordHasher->hashPassword($userGamemaster, "gamemaster"));
         $manager->persist($userGamemaster);
-
-        //  SuperAdmin User creation 
-        $userAdmin = new User();
-        $userAdmin->setLogin("superadmin")
-            ->setRoles(['ROLE_SUPER_ADMIN'])
-            ->setPassword($this->userPasswordHasher->hashPassword($userAdmin, "superadmin"));
-        $manager->persist($userAdmin);
                 
         $manager->flush();
 
@@ -100,9 +93,7 @@ class AppFixtures extends Fixture
     {
         for ($i = 0; $i <= 10; $i++) {
             $stand = new Stand();
-            $stand->setUser($user)
-                ->setActivity($activity)
-                ->setName("Stand $i");
+            $stand->setName("Stand $i");
             $manager->persist($stand);
         }
         $manager->flush();
