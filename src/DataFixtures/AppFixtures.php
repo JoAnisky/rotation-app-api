@@ -7,6 +7,7 @@ use App\Entity\Animator;
 use App\Entity\Stand;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Service\CodeGeneratorService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -14,10 +15,12 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AppFixtures extends Fixture
 {
     private $userPasswordHasher;
+    private $codeGenerator;
 
-    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher, CodeGeneratorService $codeGenerator)
     {
         $this->userPasswordHasher = $userPasswordHasher;
+        $this->codeGenerator = $codeGenerator;
     }
 
     public function load(ObjectManager $manager): void
@@ -46,7 +49,7 @@ class AppFixtures extends Fixture
             ->setRoles(['ROLE_GAMEMASTER'])
             ->setPassword($this->userPasswordHasher->hashPassword($userGamemaster, "gamemaster"));
         $manager->persist($userGamemaster);
-                
+
         $manager->flush();
 
         // Create Animators
@@ -79,17 +82,23 @@ class AppFixtures extends Fixture
 
     public function createActivities(ObjectManager $manager, User $user): void
     {
+        // Générer les codes pour les participants et les animateurs
+        $participantCode = $this->codeGenerator->generateUniqueCode('participantCode');
+        $animatorCode = $this->codeGenerator->generateUniqueCode('animatorCode');
+
         for ($i = 0; $i <= 10; $i++) {
             $activity = new Activity();
             $activity->setUser($user)
-                ->setName("Activité $i");
+                ->setName("Activité $i")
+                ->setParticipantCode($participantCode)
+                ->setAnimatorCode($animatorCode);
             $manager->persist($activity);
         }
         $manager->flush();
         $this->createStands($manager, $user, $activity);
     }
 
-    public function createStands(ObjectManager $manager, User $user, Activity $activity): void
+    public function createStands(ObjectManager $manager): void
     {
         for ($i = 0; $i <= 10; $i++) {
             $stand = new Stand();
