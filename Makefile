@@ -12,7 +12,7 @@ install: vendor/autoload.php
 	php bin/console cache:clear
 
 test:
-	vendor/bin/phpunit
+	php bin/phpunit
 
 vendor/autoload.php: composer.lock composer.json
 	composer install --no-dev --optimize-autoloader
