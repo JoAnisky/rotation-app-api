@@ -25,11 +25,11 @@ class ActivityController extends AbstractController
 {
 
     #[Route('/', name: 'activity', methods: ['GET'])]
-    //TODO : #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
+    #[Secure(roles: ["ROLE_ADMIN", "ROLE_GAMEMASTER"])]
     public function getActivitiesList(ActivityRepository $activityRepository, SerializerInterface $serializer): JsonResponse
     {
         $activitiesList = $activityRepository->findAll();
-        $jsonActivitiesList = $serializer->serialize($activitiesList, 'json', ['groups' => 'getActivity']);
+        $jsonActivitiesList = $serializer->serialize($activitiesList, 'json', ['groups' => 'getActivityNameAndId']);
         return new JsonResponse($jsonActivitiesList, Response::HTTP_OK, [], true);
     }
 
